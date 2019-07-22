@@ -1,0 +1,110 @@
+service: thumbnail-generator
+
+custom:
+  image_bucket_name: cmueller-tgen-images
+  thumb_bucket_name: cmueller-tgen-thumbnails
+  notify_url: https://discordapp.com/api/webhooks/541046713813565461/qknJwiv94CBHZFU69xsNb04XCLQkHpZqR8IFOoKzRwxJZyZU9XBtwfmq055V7iuvqW-5
+
+provider:
+  name: aws
+  runtime: java8
+  stage: dev
+  region: us-east-1
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - s3:*
+      Resource: "*"
+
+# you can add statements to the Lambda function's IAM Role here
+#  iamRoleStatements:
+#    - Effect: "Allow"
+#      Action:
+#        - "s3:*"
+#      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "S3BucketCmuellertgenimages" } ] ]  }
+
+# you can define service wide environment variables here
+  environment:
+    IMAGE_UPLOAD_BUCKET: ${self:custom.image_bucket_name}
+    THUMBNAIL_BUCKET: ${self:custom.thumb_bucket_name}
+    WEBHOOK_URL: ${self:custom.notify_url}
+
+# you can add packaging information here
+package:
+  artifact: target/thumbnail-generator-dev.jar
+
+functions:
+  upload:
+    handler: xyz.cmueller.serverless.UploadHandler
+    events:
+     - http:
+         path: upload
+         method: post
+  thumbnail-generator:
+    handler: xyz.cmueller.serverless.ThumbnailGenerationHandler
+    events:
+    - s3:
+        bucket: ${self:custom.image_bucket_name}
+        event: s3:ObjectCreated:*
+resources:
+  Resources:
+    ThumbnailBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.thumb_bucket_name}
+#    ImageBucket:
+#      Type: AWS::S3::Bucket
+#      Properties:
+#        BucketName: cmueller-tgen-images
+#        NotificationConfiguration:
+#          LambdaConfigurations:
+#            - Event: 's3:ObjectCreated:*'
+#              Function:
+#                Fn::GetAtt:
+#                  - ThumbnailDashgeneratorLambdaFunction
+#                  - Arn
+#    ThumbnailGeneratorS3Permission:
+#      Type: "AWS::Lambda::Permission"
+#      Properties:
+#        FunctionName:
+#          Fn::GetAtt:
+#            - ThumbnailDashgeneratorLambdaFunction
+#            - Arn
+#        Principal: "s3.amazonaws.com"
+#        Action: "lambda:InvokeFunction"
+#        SourceAccount:
+#          Ref: AWS::AccountId
+#        SourceArn:
+#          Fn::GetAtt:
+#            - ImageBucket
+#            - Arn
+#    ThumbnailPolicy:
+#      Type: AWS::S3::BucketPolicy
+#      Properties:
+#        Bucket:
+#          Ref: ThumbnailBucket
+#        PolicyDocument:
+#          - Effect: "Allow"
+#            Action:
+#              - "s3:*"
+#            Resource: { "Fn::Join": ["", ["arn:aws:s3:::", { "Ref": "ThumbnailBucket" } ] ]  }
+#    ImagePolicy:
+#      Type: AWS::S3::BucketPolicy
+#      Properties:
+#        Bucket:
+#          Ref: ImageBucket
+#        PolicyDocument:
+#          - Effect: "Allow"
+#            Action:
+#              - "s3:*"
+#            Resource: { "Fn::Join": ["", ["arn:aws:s3:::", { "Ref": "ImageBucket" } ] ]  }
+#  Outputs:
+#     ThunbnailBucketName:
+#       Description: "Name of the Thumbnail Bucket"
+#       Value:
+#         Ref: ThumbnailBucket
+#     ImageBucketName:
+#       Description: "Name of the Thumbnail Bucket"
+#       Value:
+#         Ref: ImageBucket
+#

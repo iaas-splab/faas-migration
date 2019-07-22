@@ -1,0 +1,6 @@
+{
+  "version": "2.0",
+  "Values": {
+    "StorageConnection": "DefaultEndpointsProtocol=https;AccountName=cmuellerbttgen;AccountKey=E9jLRLqACl8QfavZ3Y9cbgr0QCEj3lsGDK8Qb/8c1wM5rwiLcOhMUIFL3wEc7wJwy4rnVutGCw0WZxMf2ZN0Bw==;EndpointSuffix=core.windows.net"
+  }
+}
