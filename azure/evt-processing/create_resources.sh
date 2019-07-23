@@ -6,7 +6,6 @@ export AZURE_REGION=westeurope
 export MYSQL_ADMIN_USERNAME=krnladmin
 export MYSQL_ADMIN_PASSWORD=eSh4iimaeh2lioxaseukiegheNoo4phi
 
-# ONLY CHANGE THESE VALUES IN CASE OF CONFLICS
 export STORAGE_ACCOUNT_NAME=krnlevtprocstore
 export APPINSIGHTS_NAME=krnlfuncai
 export FUNCTION_APP_NAME=krnlfuncapp
