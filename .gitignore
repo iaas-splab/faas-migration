@@ -5,3 +5,6 @@
 *.class
 **/.idea/
 *.iml
+**/bin/
+**/obj/
+*.dll

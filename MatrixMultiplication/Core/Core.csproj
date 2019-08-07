@@ -1,0 +1,10 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <AssemblyName>BTCore</AssemblyName>
+        <PackageId>MatrixMul.Core</PackageId>
+        <RootNamespace>MatrixMul.Core</RootNamespace>
+        <TargetFramework>netcoreapp2.1</TargetFramework>
+    </PropertyGroup>
+
+</Project>
