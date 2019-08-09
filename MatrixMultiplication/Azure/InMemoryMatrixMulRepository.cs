@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Dynamitey.DynamicObjects;
 using MatrixMul.Core.Interfaces;
 using MatrixMul.Core.Model;
 
@@ -46,6 +45,11 @@ namespace MatrixMul.Azure
             return _results.ContainsKey(id);
         }
 
+        public void DeleteResultMatrix(string id)
+        {
+            // Nothing to Do here
+        }
+
         public void StoreComputationTasksForWorker(string id, int workerId, ComputationTask[] tasks)
         {
             if (!Tasks.ContainsKey(id))
@@ -61,6 +65,11 @@ namespace MatrixMul.Azure
             return Tasks[id][workerId];
         }
 
+        public void DeleteComputationTasks(string id, int workerId)
+        {
+            // Nothing to Do here
+        }
+
         public void StoreComputationResults(string id, int worker, ComputationResult[] results)
         {
             if (!WorkerResults.ContainsKey(id))
@@ -74,6 +83,11 @@ namespace MatrixMul.Azure
         public ComputationResult[] GetComputationResults(string id, int worker)
         {
             return WorkerResults[id][worker];
+        }
+
+        public void DeleteComputationResults(string id, int workerid)
+        {
+            // Nothing to Do here
         }
     }
 }

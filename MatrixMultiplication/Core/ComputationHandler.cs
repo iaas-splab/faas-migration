@@ -14,7 +14,7 @@ namespace MatrixMul.Core
             for (var x = 0; x < n; x++)
             for (var y = 0; y < n; y++)
             {
-                var res = 0;
+                var res = 0L;
                 for (var i = 0; i < n; i++)
                 {
                     var a = calculation.A.Data[x][i];
@@ -60,7 +60,7 @@ namespace MatrixMul.Core
 
             foreach (var computationTask in tasks)
             {
-                var res = 0;
+                var res = 0L;
                 for (var i = 0; i < n; i++)
                 {
                     var a = calculation.A.Data[computationTask.X][i];

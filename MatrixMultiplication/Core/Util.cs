@@ -16,14 +16,14 @@ namespace MatrixMul.Core
             return Guid.NewGuid().ToString();
         }
 
-        public static Matrix GenerateMatrix(int n, Func<int, int, int> genFunc)
+        public static Matrix GenerateMatrix(int n, Func<int, int, long> genFunc)
         {
             Console.WriteLine("Creating Matrix");
-            var datamatrix = new List<List<int>>();
+            var datamatrix = new List<List<long>>();
             for (var x = 0; x < n; x++)
             {
                 Console.WriteLine($"Filling Row {x}");
-                var l = new List<int>();
+                var l = new List<long>();
                 for (var y = 0; y < n; y++) l.Add(genFunc(x, y));
 
                 datamatrix.Add(l);

@@ -32,11 +32,14 @@ namespace MatrixMul.Core.Interfaces
         void StoreResultMatrix(string id, Matrix matrix);
         Matrix GetResultMatrix(string id);
         bool HasResultMatrix(string id);
+        void DeleteResultMatrix(string id);
 
         void StoreComputationTasksForWorker(string id, int workerId, ComputationTask[] tasks);
         ComputationTask[] GetComputationTasksForWorker(string id, int workerId);
+        void DeleteComputationTasks(string id, int workerId);
 
         void StoreComputationResults(string id, int worker, ComputationResult[] results);
         ComputationResult[] GetComputationResults(string id, int worker);
+        void DeleteComputationResults(string id, int workerid);
     }
 }

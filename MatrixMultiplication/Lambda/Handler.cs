@@ -7,6 +7,7 @@ using Amazon.S3;
 using Amazon.S3.Transfer;
 using MatrixMul.Core;
 using MatrixMul.Core.Interfaces;
+using MatrixMul.Core.Model;
 
 [assembly: LambdaSerializer(typeof(JsonSerializer))]
 
@@ -37,19 +38,27 @@ namespace MatrixMul.Lambda
 
         public FunctionContext CreateMatrix(FunctionContext ctx)
         {
+            var start = Util.GetUnixTimestamp();
             if (ctx.MatrixSize == 0)
             {
-                Console.WriteLine("No Values Set. Using Defaults");
+                Console.WriteLine("No Size Set. Using Default Size");
                 ctx.MatrixSize = 200;
+            }
+
+            if (ctx.MaxValue == 0)
+            {
+                Console.WriteLine("No Max Set. Using Default MaxValue");
                 ctx.MaxValue = 150;
             }
 
             var id = handler.CreateMatrix(ctx.MatrixSize, ctx.MaxValue);
             var res = new FunctionContext
             {
+                Start = start,
                 CalculationID = id,
                 MatrixSize = ctx.MatrixSize,
                 MaxValue = ctx.MaxValue,
+                CallbackUrl = ctx.CallbackUrl
             };
 
             return res;
@@ -58,6 +67,7 @@ namespace MatrixMul.Lambda
         public FunctionContext SerialMultiply(FunctionContext ctx)
         {
             handler.SerialMultiply(ctx.CalculationID);
+            ctx.WorkerCount = "0";
             return ctx;
         }
 
@@ -83,15 +93,17 @@ namespace MatrixMul.Lambda
             return ctx;
         }
 
-        public FunctionContext BuildReport(FunctionContext ctx)
+        public Report BuildReport(FunctionContext ctx)
         {
-            return ctx;
+            return handler.GenerateReport(ctx.CallbackUrl, ctx.Start, ctx.CalculationID, int.Parse(ctx.WorkerCount));
         }
     }
 
     [DataContract]
     public class FunctionContext
     {
+        [DataMember(IsRequired = false)] public long Start { get; set; }
+        [DataMember(IsRequired = false)] public string CallbackUrl { get; set; }
         [DataMember(IsRequired = false)] public int MatrixSize { get; set; }
         [DataMember(IsRequired = false)] public int MaxValue { get; set; }
         [DataMember(IsRequired = false)] public string CalculationID { get; set; }

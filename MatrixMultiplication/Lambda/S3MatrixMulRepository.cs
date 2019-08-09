@@ -1,6 +1,8 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using Amazon.Lambda.Serialization.Json;
+using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 using MatrixMul.Core.Interfaces;
 using MatrixMul.Core.Model;
@@ -52,6 +54,17 @@ namespace MatrixMul.Lambda
             return true;
         }
 
+        public void DeleteResultMatrix(string id)
+        {
+            Console.WriteLine("Removing Result Matrix " + id);
+            var t = transferUtility.S3Client.DeleteObjectAsync(new DeleteObjectRequest
+            {
+                Key = GetResultKey(id),
+                BucketName = bucketName
+            });
+            Task.WaitAll(t);
+        }
+
         public void StoreComputationTasksForWorker(string id, int workerId, ComputationTask[] tasks)
         {
             var memoryStream = new MemoryStream();
@@ -66,9 +79,26 @@ namespace MatrixMul.Lambda
                 GetTaskKeyForWorker(id, workerId)));
         }
 
+        public void DeleteComputationTasks(string id, int workerId)
+        {
+            Console.WriteLine($"Removing Tasks for Matrix {id} And Worker {workerId}");
+            var t = transferUtility.S3Client.DeleteObjectAsync(new DeleteObjectRequest
+            {
+                Key = GetTaskKeyForWorker(id, workerId),
+                BucketName = bucketName
+            });
+            Task.WaitAll(t);
+        }
+
         public void DeleteCalculation(string id)
         {
-            transferUtility.S3Client.DeleteObjectAsync(bucketName, id).Wait();
+            Console.WriteLine($"Removing Calculation for Matrix {id}");
+            var t = transferUtility.S3Client.DeleteObjectAsync(new DeleteObjectRequest
+            {
+                Key = id,
+                BucketName = bucketName
+            });
+            Task.WaitAll(t);
         }
 
         public void StoreComputationResults(string id, int worker, ComputationResult[] results)
@@ -83,6 +113,17 @@ namespace MatrixMul.Lambda
         {
             return serializer.Deserialize<ComputationResult[]>(transferUtility.OpenStream(bucketName,
                 GetResultKeyForWorker(id, workerId)));
+        }
+
+        public void DeleteComputationResults(string id, int workerId)
+        {
+            Console.WriteLine($"Removing Results for Matrix {id} And Worker {workerId}");
+            var t = transferUtility.S3Client.DeleteObjectAsync(new DeleteObjectRequest
+            {
+                Key = GetResultKeyForWorker(id, workerId),
+                BucketName = bucketName
+            });
+            Task.WaitAll(t);
         }
 
         private static string GetResultKey(string id)

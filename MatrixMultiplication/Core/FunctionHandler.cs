@@ -1,7 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Net.Http;
+using System.Runtime.Serialization.Json;
+using System.Text;
+using System.Threading.Tasks;
 using MatrixMul.Core.Interfaces;
 using MatrixMul.Core.Model;
+using Newtonsoft.Json;
 
 namespace MatrixMul.Core
 {
@@ -12,17 +18,13 @@ namespace MatrixMul.Core
 
         private ComputationHandler cHandler = new ComputationHandler();
 
-        public TimeMeasurement Measurement { get; set; }
-
         public FunctionHandler(IMatrixMulRepository datastore)
         {
             this.datastore = datastore;
-            this.Measurement = new TimeMeasurement();
         }
 
         public string CreateMatrix(int size, int maxValue = 50000)
         {
-            var start = Util.GetUnixTimestamp();
             var uid = Guid.NewGuid().ToString();
             var mtxA = Util.GenerateMatrix(size, (x, y) => rnd.Next(maxValue));
             var mtxB = Util.GenerateMatrix(size, (x, y) => rnd.Next(maxValue));
@@ -34,24 +36,19 @@ namespace MatrixMul.Core
             };
 
             datastore.StoreCalculation(uid, c);
-
-            Measurement.AddMeasurement("CreateMatrix", start);
             return uid;
         }
 
         public void SerialMultiply(string id)
         {
-            var start = Util.GetUnixTimestamp();
             var calc = datastore.GetCalculation(id);
 
             var result = cHandler.SerialMultiply(calc);
             datastore.StoreResultMatrix(id, result);
-            Measurement.AddMeasurement("SerialMultiply", start);
         }
 
         public void ScheduleMultiplicationTasks(string id, int workerCount)
         {
-            var start = Util.GetUnixTimestamp();
             var calc = datastore.GetCalculation(id);
 
             foreach (var workerTasks in cHandler.BuildTasks(workerCount, calc))
@@ -59,24 +56,19 @@ namespace MatrixMul.Core
                 Console.WriteLine($"Scheduling worker {workerTasks.Key}");
                 this.datastore.StoreComputationTasksForWorker(id, workerTasks.Key, workerTasks.Value.ToArray());
             }
-
-            Measurement.AddMeasurement("DistributeWork", start);
         }
 
         public void ParallelMultiplyWorker(string id, int workerId)
         {
-            var start = Util.GetUnixTimestamp();
             var tasks = datastore.GetComputationTasksForWorker(id, workerId);
             var calc = datastore.GetCalculation(id);
             var results = cHandler.PerformCalculations(workerId, new List<ComputationTask>(tasks), calc);
 
             datastore.StoreComputationResults(id, workerId, results.ToArray());
-            Measurement.AddMeasurement("ParallelMultiplicaton-Worker-" + workerId, start);
         }
 
         public void BuildResultMatrix(string id, int workerCount)
         {
-            var start = Util.GetUnixTimestamp();
             var calc = datastore.GetCalculation(id);
 
             List<List<ComputationResult>> results = new List<List<ComputationResult>>();
@@ -88,7 +80,50 @@ namespace MatrixMul.Core
 
             var rMatrix = cHandler.BuildResultMatrix(calc, results);
             datastore.StoreResultMatrix(id, rMatrix);
-            Measurement.AddMeasurement("BuildResult", start);
+        }
+
+        public Report GenerateReport(string callbackUrl, long start, string id, int workerCount)
+        {
+            var calc = datastore.GetCalculation(id);
+            var result = datastore.GetResultMatrix(id);
+
+            var deltask = Task.Run(() =>
+            {
+                // Cleanup
+                datastore.DeleteCalculation(id);
+                datastore.DeleteResultMatrix(id);
+
+                for (int i = 0; i < workerCount; i++)
+                {
+                    datastore.DeleteComputationResults(id, i);
+                    datastore.DeleteComputationTasks(id, i);
+                }
+            });
+
+            var doneTs = Util.GetUnixTimestamp();
+
+            var report = new Report
+            {
+                Size = result.Size,
+                EndTimestamp = doneTs,
+                StartTimestamp = start,
+                ResultMatrix = result.ToMatrixInfo(),
+                InputMatrixA = calc.A.ToMatrixInfo(),
+                InputMatrixB = calc.B.ToMatrixInfo()
+            };
+
+            if (callbackUrl != null)
+            {
+                var client = new HttpClient();
+                var data = JsonConvert.SerializeObject(report);
+                Console.WriteLine(data);
+                Task.WaitAll(client.PostAsync(callbackUrl,
+                    new StringContent(data, Encoding.Default, "application/json")));
+            }
+
+            Task.WaitAll(deltask);
+
+            return report;
         }
     }
 }

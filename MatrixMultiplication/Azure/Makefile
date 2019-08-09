@@ -10,6 +10,7 @@ STORAGE_ACCOUNT_NAME := cmuellermtrxmulstore
 FUNCTION_APP_NAME := cmuellermatrixmul
 # Define the name of the Application insights instance used for tracing/logging (gets created if not present)
 APPINSIGHTS_NAME := cmuellermatrixmulai
+# Set the name of your preferred region e.g. westeurope, westus...
 AZURE_REGION := westeurope
 
 #############################################################################

@@ -1,0 +1,705 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "The AWS CloudFormation template for this Serverless application",
+  "Resources": {
+    "ServerlessDeploymentBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "SSEAlgorithm": "AES256"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "CreateUnderscorematrixLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/matrix-mul-prod-create_matrix"
+      }
+    },
+    "SerialUnderscoremulLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/matrix-mul-prod-serial_mul"
+      }
+    },
+    "ParalellUnderscoremulUnderscoreschedulerLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/matrix-mul-prod-paralell_mul_scheduler"
+      }
+    },
+    "MulUnderscoreworkerLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/matrix-mul-prod-mul_worker"
+      }
+    },
+    "ResultUnderscorebuilderLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/matrix-mul-prod-result_builder"
+      }
+    },
+    "BuildUnderscorereportLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/matrix-mul-prod-build_report"
+      }
+    },
+    "IamRoleLambdaExecution": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": {
+              "Fn::Join": [
+                "-",
+                [
+                  "prod",
+                  "matrix-mul",
+                  "lambda"
+                ]
+              ]
+            },
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogStream"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/matrix-mul-prod*:*"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/matrix-mul-prod*:*:*"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:*"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ],
+        "Path": "/",
+        "RoleName": {
+          "Fn::Join": [
+            "-",
+            [
+              "matrix-mul",
+              "prod",
+              {
+                "Ref": "AWS::Region"
+              },
+              "lambdaRole"
+            ]
+          ]
+        }
+      }
+    },
+    "CreateUnderscorematrixLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/matrix-mul/prod/1565361816533-2019-08-09T14:43:36.533Z/matrix-mul.zip"
+        },
+        "FunctionName": "matrix-mul-prod-create_matrix",
+        "Handler": "BTLambda::MatrixMul.Lambda.Handler::CreateMatrix",
+        "MemorySize": 1024,
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        },
+        "Runtime": "dotnetcore2.1",
+        "Timeout": 600,
+        "Environment": {
+          "Variables": {
+            "DATA_BUCKET_NAME": "cmueller-mtrxmul-data",
+            "DATA_BUCKET_REGION": "us-east-1"
+          }
+        }
+      },
+      "DependsOn": [
+        "CreateUnderscorematrixLogGroup",
+        "IamRoleLambdaExecution"
+      ]
+    },
+    "CreateUnderscorematrixLambdaVersionRbMhXopVZUWx6BgvldbqSJxyehc6e15bOvj4Bz3qUc": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "CreateUnderscorematrixLambdaFunction"
+        },
+        "CodeSha256": "hjuD2Su9tWnXvm5pUsrriScs8/pYs6eq3q95C061/I4="
+      }
+    },
+    "SerialUnderscoremulLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/matrix-mul/prod/1565361816533-2019-08-09T14:43:36.533Z/matrix-mul.zip"
+        },
+        "FunctionName": "matrix-mul-prod-serial_mul",
+        "Handler": "BTLambda::MatrixMul.Lambda.Handler::SerialMultiply",
+        "MemorySize": 1024,
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        },
+        "Runtime": "dotnetcore2.1",
+        "Timeout": 600,
+        "Environment": {
+          "Variables": {
+            "DATA_BUCKET_NAME": "cmueller-mtrxmul-data",
+            "DATA_BUCKET_REGION": "us-east-1"
+          }
+        }
+      },
+      "DependsOn": [
+        "SerialUnderscoremulLogGroup",
+        "IamRoleLambdaExecution"
+      ]
+    },
+    "SerialUnderscoremulLambdaVersionIvYiHNtfBA0de7iysDak06KsXqOrMbNjh9fysIEIog": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "SerialUnderscoremulLambdaFunction"
+        },
+        "CodeSha256": "hjuD2Su9tWnXvm5pUsrriScs8/pYs6eq3q95C061/I4="
+      }
+    },
+    "ParalellUnderscoremulUnderscoreschedulerLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/matrix-mul/prod/1565361816533-2019-08-09T14:43:36.533Z/matrix-mul.zip"
+        },
+        "FunctionName": "matrix-mul-prod-paralell_mul_scheduler",
+        "Handler": "BTLambda::MatrixMul.Lambda.Handler::ScheduleMultiplyTasks",
+        "MemorySize": 1024,
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        },
+        "Runtime": "dotnetcore2.1",
+        "Timeout": 600,
+        "Environment": {
+          "Variables": {
+            "DATA_BUCKET_NAME": "cmueller-mtrxmul-data",
+            "DATA_BUCKET_REGION": "us-east-1"
+          }
+        }
+      },
+      "DependsOn": [
+        "ParalellUnderscoremulUnderscoreschedulerLogGroup",
+        "IamRoleLambdaExecution"
+      ]
+    },
+    "ParalellUnderscoremulUnderscoreschedulerLambdaVersionUt1Gh4S84jKuiOI8LH1WcGcRBgjOuLPG0P7ckgpKg": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "ParalellUnderscoremulUnderscoreschedulerLambdaFunction"
+        },
+        "CodeSha256": "hjuD2Su9tWnXvm5pUsrriScs8/pYs6eq3q95C061/I4="
+      }
+    },
+    "MulUnderscoreworkerLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/matrix-mul/prod/1565361816533-2019-08-09T14:43:36.533Z/matrix-mul.zip"
+        },
+        "FunctionName": "matrix-mul-prod-mul_worker",
+        "Handler": "BTLambda::MatrixMul.Lambda.Handler::MultiplyTasksWorker",
+        "MemorySize": 1024,
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        },
+        "Runtime": "dotnetcore2.1",
+        "Timeout": 600,
+        "Environment": {
+          "Variables": {
+            "DATA_BUCKET_NAME": "cmueller-mtrxmul-data",
+            "DATA_BUCKET_REGION": "us-east-1"
+          }
+        }
+      },
+      "DependsOn": [
+        "MulUnderscoreworkerLogGroup",
+        "IamRoleLambdaExecution"
+      ]
+    },
+    "MulUnderscoreworkerLambdaVersionNHoYXR4qKLYZ8h5ITpLxOuTrJD9vbZptmH13JrjlpQ": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "MulUnderscoreworkerLambdaFunction"
+        },
+        "CodeSha256": "hjuD2Su9tWnXvm5pUsrriScs8/pYs6eq3q95C061/I4="
+      }
+    },
+    "ResultUnderscorebuilderLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/matrix-mul/prod/1565361816533-2019-08-09T14:43:36.533Z/matrix-mul.zip"
+        },
+        "FunctionName": "matrix-mul-prod-result_builder",
+        "Handler": "BTLambda::MatrixMul.Lambda.Handler::BuildResultMatrix",
+        "MemorySize": 1024,
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        },
+        "Runtime": "dotnetcore2.1",
+        "Timeout": 600,
+        "Environment": {
+          "Variables": {
+            "DATA_BUCKET_NAME": "cmueller-mtrxmul-data",
+            "DATA_BUCKET_REGION": "us-east-1"
+          }
+        }
+      },
+      "DependsOn": [
+        "ResultUnderscorebuilderLogGroup",
+        "IamRoleLambdaExecution"
+      ]
+    },
+    "ResultUnderscorebuilderLambdaVersionNfqUOkXbnKNgOrNjRWsqC5L1faMKhrT5Dwm1rhno": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "ResultUnderscorebuilderLambdaFunction"
+        },
+        "CodeSha256": "hjuD2Su9tWnXvm5pUsrriScs8/pYs6eq3q95C061/I4="
+      }
+    },
+    "BuildUnderscorereportLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/matrix-mul/prod/1565361816533-2019-08-09T14:43:36.533Z/matrix-mul.zip"
+        },
+        "FunctionName": "matrix-mul-prod-build_report",
+        "Handler": "BTLambda::MatrixMul.Lambda.Handler::BuildReport",
+        "MemorySize": 1024,
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        },
+        "Runtime": "dotnetcore2.1",
+        "Timeout": 600,
+        "Environment": {
+          "Variables": {
+            "DATA_BUCKET_NAME": "cmueller-mtrxmul-data",
+            "DATA_BUCKET_REGION": "us-east-1"
+          }
+        }
+      },
+      "DependsOn": [
+        "BuildUnderscorereportLogGroup",
+        "IamRoleLambdaExecution"
+      ]
+    },
+    "BuildUnderscorereportLambdaVersionaCB8Dbsxd83Nolh0n3KxBpqVlrd3QAZqCcSEKtzeEI": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "BuildUnderscorereportLambdaFunction"
+        },
+        "CodeSha256": "hjuD2Su9tWnXvm5pUsrriScs8/pYs6eq3q95C061/I4="
+      }
+    },
+    "IamRoleStateMachineExecution": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "states.us-east-1.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "prod-us-east-1-matrix-mul-statemachine",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "lambda:InvokeFunction"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:matrix-mul-prod-create_matrix"
+                    },
+                    {
+                      "Fn::Sub": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:matrix-mul-prod-paralell_mul_scheduler"
+                    },
+                    {
+                      "Fn::Sub": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:matrix-mul-prod-serial_mul"
+                    },
+                    {
+                      "Fn::Sub": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:matrix-mul-prod-result_builder"
+                    },
+                    {
+                      "Fn::Sub": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:matrix-mul-prod-build_report"
+                    },
+                    {
+                      "Fn::Sub": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:matrix-mul-prod-mul_worker"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "MatrixMul": {
+      "Type": "AWS::StepFunctions::StateMachine",
+      "Properties": {
+        "DefinitionString": {
+          "Fn::Sub": "{\n  \"StartAt\": \"CreateMatrix\",\n  \"States\": {\n    \"CreateMatrix\": {\n      \"Type\": \"Task\",\n      \"Resource\": \"arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:matrix-mul-prod-create_matrix\",\n      \"TimeoutSeconds\": 60,\n      \"Next\": \"ChooseVariant\"\n    },\n    \"ChooseVariant\": {\n      \"Type\": \"Choice\",\n      \"Choices\": [\n        {\n          \"Variable\": \"$.MatrixSize\",\n          \"NumericGreaterThanEquals\": 10,\n          \"Next\": \"AppendWorkerCount\"\n        },\n        {\n          \"Variable\": \"$.MatrixSize\",\n          \"NumericLessThan\": 10,\n          \"Next\": \"SerialMul\"\n        }\n      ],\n      \"InputPath\": \"$\",\n      \"OutputPath\": \"$\"\n    },\n    \"DistributeWork\": {\n      \"Type\": \"Task\",\n      \"Resource\": \"arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:matrix-mul-prod-paralell_mul_scheduler\",\n      \"TimeoutSeconds\": 60,\n      \"Next\": \"ParallelMul\"\n    },\n    \"SerialMul\": {\n      \"Type\": \"Task\",\n      \"Resource\": \"arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:matrix-mul-prod-serial_mul\",\n      \"Comment\": \"Serial Multiplication Handler\",\n      \"InputPath\": \"$\",\n      \"OutputPath\": \"$\",\n      \"TimeoutSeconds\": 300,\n      \"Next\": \"GenReport\"\n    },\n    \"BuildResult\": {\n      \"Type\": \"Task\",\n      \"Resource\": \"arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:matrix-mul-prod-result_builder\",\n      \"TimeoutSeconds\": 60,\n      \"Next\": \"GenReport\"\n    },\n    \"GenReport\": {\n      \"Type\": \"Task\",\n      \"Resource\": \"arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:matrix-mul-prod-build_report\",\n      \"TimeoutSeconds\": 60,\n      \"End\": true\n    },\n    \"ParallelMul\": {\n      \"Type\": \"Parallel\",\n      \"Branches\": [\n        {\n          \"StartAt\": \"AssignWorkerID1\",\n          \"States\": {\n            \"AssignWorkerID1\": {\n              \"Type\": \"Pass\",\n              \"InputPath\": \"$\",\n              \"OutputPath\": \"$\",\n              \"ResultPath\": \"$.WorkerID\",\n              \"Result\": \"0\",\n              \"Next\": \"MulWorker1\"\n            },\n            \"MulWorker1\": {\n              \"Type\": \"Task\",\n              \"Resource\": \"arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:matrix-mul-prod-mul_worker\",\n              \"TimeoutSeconds\": 600,\n              \"End\": true\n            }\n          }\n        },\n        {\n          \"StartAt\": \"AssignWorkerID2\",\n          \"States\": {\n            \"AssignWorkerID2\": {\n              \"Type\": \"Pass\",\n              \"InputPath\": \"$\",\n              \"OutputPath\": \"$\",\n              \"ResultPath\": \"$.WorkerID\",\n              \"Result\": \"1\",\n              \"Next\": \"MulWorker2\"\n            },\n            \"MulWorker2\": {\n              \"Type\": \"Task\",\n              \"Resource\": \"arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:matrix-mul-prod-mul_worker\",\n              \"TimeoutSeconds\": 600,\n              \"End\": true\n            }\n          }\n        },\n        {\n          \"StartAt\": \"AssignWorkerID3\",\n          \"States\": {\n            \"AssignWorkerID3\": {\n              \"Type\": \"Pass\",\n              \"InputPath\": \"$\",\n              \"OutputPath\": \"$\",\n              \"ResultPath\": \"$.WorkerID\",\n              \"Result\": \"2\",\n              \"Next\": \"MulWorker3\"\n            },\n            \"MulWorker3\": {\n              \"Type\": \"Task\",\n              \"Resource\": \"arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:matrix-mul-prod-mul_worker\",\n              \"TimeoutSeconds\": 600,\n              \"End\": true\n            }\n          }\n        },\n        {\n          \"StartAt\": \"AssignWorkerID5\",\n          \"States\": {\n            \"AssignWorkerID5\": {\n              \"Type\": \"Pass\",\n              \"InputPath\": \"$\",\n              \"OutputPath\": \"$\",\n              \"ResultPath\": \"$.WorkerID\",\n              \"Result\": \"4\",\n              \"Next\": \"MulWorker5\"\n            },\n            \"MulWorker5\": {\n              \"Type\": \"Task\",\n              \"Resource\": \"arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:matrix-mul-prod-mul_worker\",\n              \"TimeoutSeconds\": 600,\n              \"End\": true\n            }\n          }\n        },\n        {\n          \"StartAt\": \"AssignWorkerID4\",\n          \"States\": {\n            \"AssignWorkerID4\": {\n              \"Type\": \"Pass\",\n              \"InputPath\": \"$\",\n              \"OutputPath\": \"$\",\n              \"ResultPath\": \"$.WorkerID\",\n              \"Result\": \"3\",\n              \"Next\": \"MulWorker4\"\n            },\n            \"MulWorker4\": {\n              \"Type\": \"Task\",\n              \"Resource\": \"arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:matrix-mul-prod-mul_worker\",\n              \"TimeoutSeconds\": 600,\n              \"End\": true\n            }\n          }\n        }\n      ],\n      \"InputPath\": \"$\",\n      \"OutputPath\": \"$\",\n      \"ResultPath\": \"$.Result\",\n      \"Next\": \"BuildResult\"\n    },\n    \"AppendWorkerCount\": {\n      \"Type\": \"Pass\",\n      \"InputPath\": \"$\",\n      \"OutputPath\": \"$\",\n      \"ResultPath\": \"$.WorkerCount\",\n      \"Result\": \"5\",\n      \"Next\": \"DistributeWork\"\n    }\n  }\n}"
+        },
+        "RoleArn": {
+          "Fn::GetAtt": [
+            "IamRoleStateMachineExecution",
+            "Arn"
+          ]
+        },
+        "Tags": [],
+        "StateMachineName": "MatrixMul"
+      },
+      "DependsOn": [
+        "IamRoleStateMachineExecution"
+      ]
+    },
+    "ApiGatewayRestApi": {
+      "Type": "AWS::ApiGateway::RestApi",
+      "Properties": {
+        "Name": "prod-matrix-mul",
+        "EndpointConfiguration": {
+          "Types": [
+            "EDGE"
+          ]
+        }
+      }
+    },
+    "ApiGatewayResourceRun": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Fn::GetAtt": [
+            "ApiGatewayRestApi",
+            "RootResourceId"
+          ]
+        },
+        "PathPart": "run",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayMethodRunPost": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "POST",
+        "RequestParameters": {},
+        "AuthorizationType": "NONE",
+        "ApiKeyRequired": false,
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceRun"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS",
+          "Credentials": {
+            "Fn::GetAtt": [
+              "ApigatewayToStepFunctionsRole",
+              "Arn"
+            ]
+          },
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:aws:apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":states:action/StartExecution"
+              ]
+            ]
+          },
+          "PassthroughBehavior": "NEVER",
+          "RequestTemplates": {
+            "application/json": {
+              "Fn::Sub": [
+                "\n#set( $body = $util.escapeJavaScript($input.json('$')) )\n{\"input\": \"$body\", \"name\": \"$context.requestId\", \"stateMachineArn\":\"${StateMachineArn}\"}",
+                {
+                  "StateMachineArn": {
+                    "Ref": "MatrixMul"
+                  }
+                }
+              ]
+            },
+            "application/x-www-form-urlencoded": {
+              "Fn::Sub": [
+                "\n#set( $body = $util.escapeJavaScript($input.json('$')) )\n{\"input\": \"$body\", \"name\": \"$context.requestId\", \"stateMachineArn\":\"${StateMachineArn}\"}",
+                {
+                  "StateMachineArn": {
+                    "Ref": "MatrixMul"
+                  }
+                }
+              ]
+            }
+          },
+          "IntegrationResponses": [
+            {
+              "StatusCode": 200,
+              "SelectionPattern": 200,
+              "ResponseParameters": {},
+              "ResponseTemplates": {}
+            },
+            {
+              "StatusCode": 400,
+              "SelectionPattern": 400,
+              "ResponseParameters": {},
+              "ResponseTemplates": {}
+            }
+          ]
+        },
+        "MethodResponses": [
+          {
+            "ResponseParameters": {},
+            "ResponseModels": {},
+            "StatusCode": 200
+          },
+          {
+            "ResponseParameters": {},
+            "ResponseModels": {},
+            "StatusCode": 400
+          }
+        ]
+      }
+    },
+    "ApigatewayToStepFunctionsRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "apigateway.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "apigatewaytostepfunctions",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "states:StartExecution"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "ApiGatewayDeploymentundefined": {
+      "Type": "AWS::ApiGateway::Deployment",
+      "Properties": {
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "StageName": "prod"
+      },
+      "DependsOn": [
+        "ApiGatewayMethodRunPost"
+      ]
+    },
+    "ThumbnailBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": "cmueller-mtrxmul-data"
+      }
+    }
+  },
+  "Outputs": {
+    "ServerlessDeploymentBucketName": {
+      "Value": {
+        "Ref": "ServerlessDeploymentBucket"
+      }
+    },
+    "CreateUnderscorematrixLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "CreateUnderscorematrixLambdaVersionRbMhXopVZUWx6BgvldbqSJxyehc6e15bOvj4Bz3qUc"
+      }
+    },
+    "SerialUnderscoremulLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "SerialUnderscoremulLambdaVersionIvYiHNtfBA0de7iysDak06KsXqOrMbNjh9fysIEIog"
+      }
+    },
+    "ParalellUnderscoremulUnderscoreschedulerLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "ParalellUnderscoremulUnderscoreschedulerLambdaVersionUt1Gh4S84jKuiOI8LH1WcGcRBgjOuLPG0P7ckgpKg"
+      }
+    },
+    "MulUnderscoreworkerLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "MulUnderscoreworkerLambdaVersionNHoYXR4qKLYZ8h5ITpLxOuTrJD9vbZptmH13JrjlpQ"
+      }
+    },
+    "ResultUnderscorebuilderLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "ResultUnderscorebuilderLambdaVersionNfqUOkXbnKNgOrNjRWsqC5L1faMKhrT5Dwm1rhno"
+      }
+    },
+    "BuildUnderscorereportLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "BuildUnderscorereportLambdaVersionaCB8Dbsxd83Nolh0n3KxBpqVlrd3QAZqCcSEKtzeEI"
+      }
+    },
+    "MatrixMulArn": {
+      "Description": "Current StateMachine Arn",
+      "Value": {
+        "Ref": "MatrixMul"
+      }
+    },
+    "ServiceEndpoint": {
+      "Description": "URL of the service endpoint",
+      "Value": {
+        "Fn::Join": [
+          "",
+          [
+            "https://",
+            {
+              "Ref": "ApiGatewayRestApi"
+            },
+            ".execute-api.",
+            {
+              "Ref": "AWS::Region"
+            },
+            ".",
+            {
+              "Ref": "AWS::URLSuffix"
+            },
+            "/prod"
+          ]
+        ]
+      }
+    },
+    "MatrixMul": {
+      "Description": "The ARN of the MatrixMul state machine",
+      "Value": {
+        "Ref": "MatrixMul"
+      }
+    }
+  }
+}

@@ -1,16 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Dynamitey.DynamicObjects;
 using MatrixMul.Core;
 using MatrixMul.Core.Model;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
 
 namespace MatrixMul.Azure
@@ -18,156 +14,154 @@ namespace MatrixMul.Azure
     public static class Functions
     {
         [FunctionName("OrchestrateMatrixMultiplication")]
-        public static async Task<TimeMeasurement> OrchestrateMultiplication(
+        public static async Task<Report> OrchestrateMultiplication(
             [OrchestrationTrigger] DurableOrchestrationContext context
         )
         {
-            var configuration = context.GetInput<CalculationConfiguration>();
-            var s = configuration.MatrixSize;
+            var startTime = Util.GetUnixTimestamp();
+            var calcConfig = context.GetInput<CalculationConfiguration>();
+            var s = calcConfig.MatrixSize;
 
-            var calculation = await context.CallActivityAsync<TMC<MatrixCalculation>>("GenerateMatrix",
-                configuration);
+            var workerCount = 0;
+
+            var calculation = await context.CallActivityAsync<MatrixCalculation>("GenerateMatrix", calcConfig);
 
             Matrix result = null;
-            TimeMeasurement measurement = calculation.Measurement;
 
             if (s < 10)
             {
-                var calcResult =
-                    await context.CallActivityAsync<TMC<Matrix>>("SerialMultiply", calculation);
-                result = calcResult.Value;
-                measurement = calcResult.Measurement;
+                workerCount = 0;
+                result = await context.CallActivityAsync<Matrix>("SerialMultiply", calculation);
             }
             else
             {
-                var tasks =
-                    await context.CallActivityAsync<TMC<Dictionary<int, ComputationTask[]>>>(
-                        "DistributeWork",
-                        new TMC<WorkDistributionContext>(
-                            new WorkDistributionContext
-                            {
-                                Calculation = calculation.Value,
-                                WorkerCount = 5
-                            }, measurement)
-                    );
-                measurement = tasks.Measurement;
+                workerCount = 5;
+                var tasks = await context.CallActivityAsync<Dictionary<int, ComputationTask[]>>("DistributeWork",
+                    new WorkDistributionContext
+                    {
+                        Calculation = calculation,
+                        WorkerCount = workerCount
+                    });
 
-                var scheduledTasks = new Dictionary<int, Task<TMC<ComputationResult[]>>>();
-                foreach (var keyValuePair in tasks.Value)
+                var scheduledTasks = new Dictionary<int, Task<ComputationResult[]>>();
+                foreach (var keyValuePair in tasks)
                 {
-                    var task = context.CallActivityAsync<TMC<ComputationResult[]>>(
-                        "ParallelMultiply", new TMC<ParallelWorkerContext>(
-                            new ParallelWorkerContext
-                            {
-                                Calculation = calculation.Value,
-                                WorkerID = keyValuePair.Key,
-                                Tasks = keyValuePair.Value
-                            }, measurement));
-                    scheduledTasks.Add(keyValuePair.Key, task);
+                    scheduledTasks.Add(keyValuePair.Key, context.CallActivityAsync<ComputationResult[]>(
+                        "ParallelMultiply", new ParallelWorkerContext
+                        {
+                            Calculation = calculation,
+                            WorkerID = keyValuePair.Key,
+                            Tasks = keyValuePair.Value
+                        }));
                 }
 
                 var resultSet = new Dictionary<int, ComputationResult[]>();
                 foreach (var keyValuePair in scheduledTasks)
                 {
                     var results = await keyValuePair.Value;
-                    resultSet.Add(keyValuePair.Key, results.Value);
-                    var names = measurement.Measurements.Select(e => e.Name);
-                    measurement.Measurements.AddRange(
-                        results.Measurement.Measurements.Where(e => !names.Contains(e.Name)));
+                    resultSet.Add(keyValuePair.Key, results);
                 }
 
-                var calcResult = await context.CallActivityAsync<TMC<Matrix>>("BuildResult",
-                    new TMC<BuildResultContext>(new BuildResultContext
-                    {
-                        Calculation = calculation.Value,
-                        Results = resultSet
-                    }, measurement));
-                measurement = calcResult.Measurement;
+                result = await context.CallActivityAsync<Matrix>("BuildResult", new BuildResultContext
+                {
+                    Calculation = calculation,
+                    Results = resultSet
+                });
             }
 
-            return measurement;
+            var report = await context.CallActivityAsync<Report>("BuildReport", new ReportContext
+            {
+                Calculation = calculation,
+                Result = result,
+                StartTime = startTime,
+                CallbackURL = calcConfig.DoCallback ? calcConfig.CallbackURL : null,
+                WorkerCount = workerCount
+            });
+
+            return report;
         }
 
         [FunctionName("GenerateMatrix")]
-        public static TMC<MatrixCalculation> GenerateMatrix(
-            [ActivityTrigger] CalculationConfiguration cfg, ILogger log)
+        public static MatrixCalculation GenerateMatrix([ActivityTrigger] CalculationConfiguration cfg, ILogger log)
         {
             var s = cfg.MatrixSize;
 
-            log.LogInformation($"Creating Two {cfg}x{cfg} matrices");
+            log.LogInformation($"Creating Two {s}x{s} matrices");
             var repo = new InMemoryMatrixMulRepository();
             var hndlr = new FunctionHandler(repo);
             var id = hndlr.CreateMatrix(s, cfg.MaxValue);
 
             log.LogInformation($"Created MatrixCalculations with ID {id}");
 
-            return new TMC<MatrixCalculation>(repo.GetCalculation(id), hndlr.Measurement);
+            return repo.GetCalculation(id);
         }
 
         [FunctionName("SerialMultiply")]
-        public static TMC<Matrix> SerialMultiply(
-            [ActivityTrigger] TMC<MatrixCalculation> calculation, ILogger log)
+        public static Matrix SerialMultiply([ActivityTrigger] MatrixCalculation calculation, ILogger log)
         {
             var repo = new InMemoryMatrixMulRepository();
-            repo.StoreCalculation("an_id", calculation.Value);
+            repo.StoreCalculation("an_id", calculation);
             var hndlr = new FunctionHandler(repo);
-            hndlr.Measurement = calculation.Measurement;
 
             log.LogInformation("Serially multiplying two matrices");
             hndlr.SerialMultiply("an_id");
 
-            return new TMC<Matrix>(repo.GetResultMatrix("an_id"), hndlr.Measurement);
+            return repo.GetResultMatrix("an_id");
         }
 
         [FunctionName("DistributeWork")]
-        public static TMC<Dictionary<int, ComputationTask[]>> DistributeWork(
-            [ActivityTrigger] TMC<WorkDistributionContext> ctx,
+        public static Dictionary<int, ComputationTask[]> DistributeWork([ActivityTrigger] WorkDistributionContext ctx,
             ILogger log)
         {
             var repo = new InMemoryMatrixMulRepository();
-            repo.StoreCalculation("an_id", ctx.Value.Calculation);
+            repo.StoreCalculation("an_id", ctx.Calculation);
             var hndlr = new FunctionHandler(repo);
-            hndlr.Measurement = ctx.Measurement;
 
             log.LogInformation("Scheduling Tasks");
-            hndlr.ScheduleMultiplicationTasks("an_id", ctx.Value.WorkerCount);
+            hndlr.ScheduleMultiplicationTasks("an_id", ctx.WorkerCount);
 
-            return new TMC<Dictionary<int, ComputationTask[]>>(repo.Tasks["an_id"],
-                hndlr.Measurement);
+            return repo.Tasks["an_id"];
         }
 
         [FunctionName("ParallelMultiply")]
-        public static TMC<ComputationResult[]> ParallelMultiply(
-            [ActivityTrigger] TMC<ParallelWorkerContext> ctx, ILogger log)
+        public static ComputationResult[] ParallelMultiply([ActivityTrigger] ParallelWorkerContext ctx, ILogger log)
         {
             var repo = new InMemoryMatrixMulRepository();
-            repo.StoreCalculation("an_id", ctx.Value.Calculation);
-            repo.StoreComputationTasksForWorker("an_id", ctx.Value.WorkerID, ctx.Value.Tasks);
+            repo.StoreCalculation("an_id", ctx.Calculation);
+            repo.StoreComputationTasksForWorker("an_id", ctx.WorkerID, ctx.Tasks);
             var hndlr = new FunctionHandler(repo);
-            hndlr.Measurement = ctx.Measurement;
 
-            log.LogInformation($"Worker #{ctx.Value.WorkerID} Running parallel Multiplication tasks");
-            hndlr.ParallelMultiplyWorker("an_id", ctx.Value.WorkerID);
+            log.LogInformation($"Worker #{ctx.WorkerID} Running parallel Multiplication tasks");
+            hndlr.ParallelMultiplyWorker("an_id", ctx.WorkerID);
 
-            return new TMC<ComputationResult[]>(
-                repo.GetComputationResults("an_id", ctx.Value.WorkerID), hndlr.Measurement);
+            return repo.GetComputationResults("an_id", ctx.WorkerID);
         }
 
+
         [FunctionName("BuildResult")]
-        public static TMC<Matrix> BuildResultMatrix(
-            [ActivityTrigger] TMC<BuildResultContext> ctx,
-            ILogger log)
+        public static Matrix BuildResultMatrix([ActivityTrigger] BuildResultContext ctx, ILogger log)
         {
             var repo = new InMemoryMatrixMulRepository();
-            repo.StoreCalculation("an_id", ctx.Value.Calculation);
-            repo.WorkerResults.Add("an_id", ctx.Value.Results);
+            repo.StoreCalculation("an_id", ctx.Calculation);
+            repo.WorkerResults.Add("an_id", ctx.Results);
             var hndlr = new FunctionHandler(repo);
-            hndlr.Measurement = ctx.Measurement;
 
             log.LogInformation($"Building Result Matrix");
-            hndlr.BuildResultMatrix("an_id", ctx.Value.Results.Count);
+            hndlr.BuildResultMatrix("an_id", ctx.Results.Count);
 
-            return new TMC<Matrix>(repo.GetResultMatrix("an_id"), hndlr.Measurement);
+            return repo.GetResultMatrix("an_id");
+        }
+
+        [FunctionName("BuildReport")]
+        public static Report BuildReport([ActivityTrigger] ReportContext ctx, ILogger log)
+        {
+            var repo = new InMemoryMatrixMulRepository();
+            repo.StoreCalculation("an_id", ctx.Calculation);
+            repo.StoreResultMatrix("an_id", ctx.Result);
+            var hndlr = new FunctionHandler(repo);
+
+            log.LogInformation($"Building Report");
+            return hndlr.GenerateReport(ctx.CallbackURL, ctx.StartTime, "an_id", ctx.WorkerCount);
         }
 
         [FunctionName("TriggerMatrixMultiplication")]
@@ -226,18 +220,6 @@ namespace MatrixMul.Azure
         }
     }
 
-    public class TMC<T>
-    {
-        public TMC(T value, TimeMeasurement measurement)
-        {
-            Value = value;
-            Measurement = measurement;
-        }
-
-        public T Value { get; set; }
-        public TimeMeasurement Measurement { get; set; }
-    }
-
     public class CalculationConfiguration
     {
         public int MatrixSize { get; set; }
@@ -250,6 +232,15 @@ namespace MatrixMul.Azure
     {
         public MatrixCalculation Calculation { get; set; }
         public int WorkerCount { get; set; }
+    }
+
+    public class ReportContext
+    {
+        public MatrixCalculation Calculation { get; set; }
+        public Matrix Result { get; set; }
+        public int WorkerCount { get; set; }
+        public long StartTime { get; set; }
+        public string CallbackURL { get; set; }
     }
 
     public class ParallelWorkerContext

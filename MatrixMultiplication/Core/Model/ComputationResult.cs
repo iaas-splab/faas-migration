@@ -5,6 +5,6 @@ namespace MatrixMul.Core.Model
     [DataContract]
     public class ComputationResult : ComputationTask
     {
-        [DataMember] public int Result { get; set; }
+        [DataMember] public long Result { get; set; }
     }
 }
