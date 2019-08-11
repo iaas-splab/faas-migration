@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lambda", "Lambda\Lambda.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Azure", "Azure\Azure.csproj", "{90BAF923-79C5-4D7D-B65B-DFCA42BA94CE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IBMCloud", "IBMCloud\IBMCloud.csproj", "{EE00AE78-B4B4-4194-8E36-098505E1BC4E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{90BAF923-79C5-4D7D-B65B-DFCA42BA94CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{90BAF923-79C5-4D7D-B65B-DFCA42BA94CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{90BAF923-79C5-4D7D-B65B-DFCA42BA94CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE00AE78-B4B4-4194-8E36-098505E1BC4E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE00AE78-B4B4-4194-8E36-098505E1BC4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE00AE78-B4B4-4194-8E36-098505E1BC4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE00AE78-B4B4-4194-8E36-098505E1BC4E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
