@@ -8,13 +8,24 @@ namespace MatrixMul.IBMCloud
     {
         public JObject Main(JObject args)
         {
-            var repo = new S3Repository(args);
-            var hndlr = new FunctionHandler(repo);
+            try
+            {
+                var repo = new CloudObjectStorageRepository(args);
+                var hndlr = new FunctionHandler(repo);
 
-            hndlr.SerialMultiply(args["id"].ToString());
+                hndlr.SerialMultiply(args["id"].ToString());
 
-            Console.WriteLine(args.ToString());
-            return args;
+                Console.WriteLine(args.ToString());
+                return args;
+            }
+            catch (Exception e)
+            {
+                var j = new JObject();
+                j["error"] = e.ToString();
+                return j;
+            }
+            
+            
         }
     }
 }

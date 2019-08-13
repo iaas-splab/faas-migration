@@ -89,7 +89,7 @@ namespace MatrixMul.Azure
             log.LogInformation($"Creating Two {s}x{s} matrices");
             var repo = new InMemoryMatrixMulRepository();
             var hndlr = new FunctionHandler(repo);
-            var id = hndlr.CreateMatrix(s, cfg.MaxValue);
+            var id = hndlr.CreateMatrix(s, cfg.MaxValue, cfg.Seed);
 
             log.LogInformation($"Created MatrixCalculations with ID {id}");
 
@@ -203,6 +203,15 @@ namespace MatrixMul.Azure
                 callback = req.Query["callback"];
             }
 
+            long seed = -1;
+            if (req.Query.ContainsKey("seed"))
+            {
+                if (!long.TryParse(req.Query["seed"], out seed))
+                {
+                    seed = -1;
+                }
+            }
+
 
             // Function input comes from the request content.
             string instanceId = await starter.StartNewAsync("OrchestrateMatrixMultiplication",
@@ -211,7 +220,8 @@ namespace MatrixMul.Azure
                     MaxValue = maxValue,
                     MatrixSize = matrixSize,
                     DoCallback = hasCallback,
-                    CallbackURL = callback
+                    CallbackURL = callback,
+                    Seed = -1
                 });
 
             log.LogInformation($"Started orchestration with ID = '{instanceId}' with Matrix Size n={matrixSize}.");
@@ -225,6 +235,7 @@ namespace MatrixMul.Azure
         public int MatrixSize { get; set; }
         public int MaxValue { get; set; }
         public bool DoCallback { get; set; }
+        public int Seed { get; set; }
         public string CallbackURL { get; set; }
     }
 

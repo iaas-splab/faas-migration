@@ -51,7 +51,12 @@ namespace MatrixMul.Lambda
                 ctx.MaxValue = 150;
             }
 
-            var id = handler.CreateMatrix(ctx.MatrixSize, ctx.MaxValue);
+            if (ctx.Seed == 0)
+            {
+                ctx.Seed = -1;
+            }
+
+            var id = handler.CreateMatrix(ctx.MatrixSize, ctx.MaxValue, ctx.Seed);
             var res = new FunctionContext
             {
                 Start = start,
@@ -106,6 +111,7 @@ namespace MatrixMul.Lambda
         [DataMember(IsRequired = false)] public string CallbackUrl { get; set; }
         [DataMember(IsRequired = false)] public int MatrixSize { get; set; }
         [DataMember(IsRequired = false)] public int MaxValue { get; set; }
+        [DataMember(IsRequired = false)] public int Seed { get; set; }
         [DataMember(IsRequired = false)] public string CalculationID { get; set; }
 
         [DataMember(IsRequired = false)] public string WorkerID { get; set; }

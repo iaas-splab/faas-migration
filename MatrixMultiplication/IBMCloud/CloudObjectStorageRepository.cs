@@ -10,7 +10,7 @@ using Newtonsoft.Json.Linq;
 
 namespace MatrixMul.IBMCloud
 {
-    public class S3Repository : IMatrixMulRepository
+    public class CloudObjectStorageRepository : IMatrixMulRepository
     {
         private string _bucketName;
         private string _endpoint;
@@ -19,7 +19,7 @@ namespace MatrixMul.IBMCloud
 
         private MinioClient _client;
 
-        public S3Repository(JObject input)
+        public CloudObjectStorageRepository(JObject input)
         {
             _bucketName = input["s3_bucket_name"].ToString();
             _endpoint = input["s3_endpoint"].ToString();
@@ -38,7 +38,7 @@ namespace MatrixMul.IBMCloud
             }
         }
 
-        public S3Repository(string bucketName, string endpoint, string accessKey, string secretKey)
+        public CloudObjectStorageRepository(string bucketName, string endpoint, string accessKey, string secretKey)
         {
             _bucketName = bucketName;
             _endpoint = endpoint;
@@ -73,10 +73,12 @@ namespace MatrixMul.IBMCloud
 
         public void StoreResultMatrix(string id, Matrix matrix)
         {
+            Console.WriteLine("Writing Result matrix");
             var data = JsonConvert.SerializeObject(matrix);
             var ms = new MemoryStream();
             ms.Write(Encoding.UTF8.GetBytes(data));
             ms.Seek(0, SeekOrigin.Begin);
+            Console.WriteLine($"Sending {ms.Length} Bytes to Object Storage");
             Task.WaitAll(_client.PutObjectAsync(_bucketName, GetResultKey(id), ms, ms.Length));
         }
 

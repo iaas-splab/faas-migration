@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MatrixMul.Core.Interfaces;
 using MatrixMul.Core.Model;
+using Microsoft.VisualBasic.CompilerServices;
 using Newtonsoft.Json;
 
 namespace MatrixMul.Core
@@ -14,7 +15,6 @@ namespace MatrixMul.Core
     public class FunctionHandler
     {
         private readonly IMatrixMulRepository datastore;
-        private readonly Random rnd = new Random();
 
         private ComputationHandler cHandler = new ComputationHandler();
 
@@ -23,8 +23,15 @@ namespace MatrixMul.Core
             this.datastore = datastore;
         }
 
-        public string CreateMatrix(int size, int maxValue = 50000)
+        public string CreateMatrix(int size, int maxValue = 50000, long seed = -1)
         {
+            if (seed == -1)
+            {
+                seed = Util.GetUnixTimestamp();
+            }
+
+            Random rnd = new Random((int) seed);
+
             var uid = Guid.NewGuid().ToString();
             var mtxA = Util.GenerateMatrix(size, (x, y) => rnd.Next(maxValue));
             var mtxB = Util.GenerateMatrix(size, (x, y) => rnd.Next(maxValue));
@@ -89,14 +96,22 @@ namespace MatrixMul.Core
 
             var deltask = Task.Run(() =>
             {
-                // Cleanup
-                datastore.DeleteCalculation(id);
-                datastore.DeleteResultMatrix(id);
-
-                for (int i = 0; i < workerCount; i++)
+                try
                 {
-                    datastore.DeleteComputationResults(id, i);
-                    datastore.DeleteComputationTasks(id, i);
+                    // Cleanup
+                    datastore.DeleteCalculation(id);
+                    datastore.DeleteResultMatrix(id);
+
+                    for (int i = 0; i < workerCount; i++)
+                    {
+                        datastore.DeleteComputationResults(id, i);
+                        datastore.DeleteComputationTasks(id, i);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Deletion of data has failed!");
+                    Console.WriteLine(e.ToString());
                 }
             });
 
