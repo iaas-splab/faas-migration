@@ -83,7 +83,7 @@ namespace MatrixMul.Core.Model
             for (var i = 0; i < Data.Count; i++)
             {
                 var line = Data[i];
-                for (var j = 0; j < line.Count; j++) builder.Append($"{line[i]:D5} ");
+                for (var j = 0; j < line.Count; j++) builder.Append($"{line[j]:D10} ");
 
                 builder.Append("\n");
             }

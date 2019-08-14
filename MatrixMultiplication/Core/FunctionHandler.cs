@@ -23,7 +23,8 @@ namespace MatrixMul.Core
             this.datastore = datastore;
         }
 
-        public string CreateMatrix(int size, int maxValue = 50000, long seed = -1)
+        public string CreateMatrix(int size, int maxValue = 50000, long seed = -1,
+            Func<int, int, long> genFuncA = null, Func<int, int, long> genFuncB = null)
         {
             if (seed == -1)
             {
@@ -32,9 +33,22 @@ namespace MatrixMul.Core
 
             Random rnd = new Random((int) seed);
 
+            Func<int, int, long> funca = (x, y) => rnd.Next(maxValue);
+            Func<int, int, long> funcb = (x, y) => rnd.Next(maxValue);
+
+            if (genFuncA != null)
+            {
+                funca = genFuncA;
+            }
+
+            if (genFuncB != null)
+            {
+                funcb = genFuncB;
+            }
+
             var uid = Guid.NewGuid().ToString();
-            var mtxA = Util.GenerateMatrix(size, (x, y) => rnd.Next(maxValue));
-            var mtxB = Util.GenerateMatrix(size, (x, y) => rnd.Next(maxValue));
+            var mtxA = Util.GenerateMatrix(size, funca);
+            var mtxB = Util.GenerateMatrix(size, funcb);
 
             var c = new MatrixCalculation
             {
