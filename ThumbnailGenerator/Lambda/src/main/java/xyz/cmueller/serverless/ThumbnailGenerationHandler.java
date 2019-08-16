@@ -66,41 +66,6 @@ public class ThumbnailGenerationHandler implements RequestHandler<S3Event, Void>
             }
             LOG.info("Done!");
         }
-
-        try {
-            Map<String, String> m = new HashMap<>();
-            m.put("username", "Lambda");
-            m.put("content", bout.toString());
-
-            resultMessage = mapper.writeValueAsString(m);
-        } catch (Exception e) {
-            handleException(context, e);
-        }
-
-        OkHttpClient client = new OkHttpClient();
-
-        Request req = new Request.Builder().url(WEBHOOK_URL)
-                .post(RequestBody.create(MediaType.parse("application/json"), resultMessage)).build();
-
-        try {
-            client.newCall(req).execute();
-        } catch (Exception e) {
-            handleException(context, e);
-        }
-
         return null;
-    }
-
-    private void handleException(Context context, Exception e) {
-        LOG.error(e);
-
-        e.printStackTrace();
-
-        ByteArrayOutputStream bout = new ByteArrayOutputStream();
-        PrintStream out = new PrintStream(bout);
-
-        e.printStackTrace(out);
-
-        context.getLogger().log(bout.toByteArray());
     }
 }

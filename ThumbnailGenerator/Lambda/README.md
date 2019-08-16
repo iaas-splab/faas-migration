@@ -2,6 +2,38 @@
 
 Implements the first use case on Amazon Web Services using Java and the serverless framework
 
+## Buiilding
+
+Assuming Java 8 (JDK) and Apache Maven are installed just run the following command to compile the source code:
+```
+mvn clean package
+```
+
+## Deploying
+
+Before deploying you might want to modify the names of the buckets in the `serverless.yml` to ensure they are unique:
+```yaml
+custom:
+  image_bucket_name: <Name of the Input Bucket>
+  thumb_bucket_name: <Name of the Output Bucket>
+```
+
+After the code has been built it can be deployed by running:
+```
+serverless deploy -v
+```
+
+## Destroying
+
+To destroy the application you first have to make sure both buckets are empty. This process is not automated. To do this just open
+the Web Interface and delete the contents of both the input and the output bucket. Removing the buckets themselves is not needed
+since the Serverless Frameworks CloudFormation Script will handle this for us.
+
+To destroy just run:
+```
+serverless remove -v
+```
+
 ## Usage
 
 Every time a image gets uploaded to a S§ bucket the `thumbnail-generator` function triggers to generate
