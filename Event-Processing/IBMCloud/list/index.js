@@ -44,14 +44,14 @@ exports.main =  async function(args) {
     sql: 'SELECT * FROM events ORDER BY ID DESC;',
     timeout: 10000
   });
-  context.log(result);
+  console.log(result);
   await mysql.end();
 
-  context.res = {
+  return {
       statuscode: 200,
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(result)
+      body: result
   };
 }
