@@ -15,7 +15,7 @@ namespace AzureToDo
 {
     public static class ToDoAPI
     {
-        [FunctionName("add")]
+        [FunctionName("put")]
         [StorageAccount("AzureWebJobsStorage")]
         public static async Task<IActionResult> AddItem(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)]
@@ -58,12 +58,12 @@ namespace AzureToDo
             ILogger log,
             [Table("todo")] CloudTable todoTable)
         {
-            if (!req.Query.ContainsKey("uid"))
+            if (!req.Query.ContainsKey("id"))
             {
                 return new BadRequestResult();
             }
 
-            string uid = req.Query["uid"];
+            string uid = req.Query["id"];
             Guid uuid;
             if (!Guid.TryParse(uid, out uuid))
             {
@@ -72,16 +72,25 @@ namespace AzureToDo
 
             log.LogInformation($"Attempting to Delete {uid}");
 
-            var batch = new TableBatchOperation();
-            batch.Delete(new ToDoItem
+            try
             {
-                ID = uid,
-                ETag = "*"
-            });
+                var batch = new TableBatchOperation();
+                batch.Delete(new ToDoItem
+                {
+                    ID = uid,
+                    ETag = "*"
+                });
 
-            await todoTable.ExecuteBatchAsync(batch);
+                await todoTable.ExecuteBatchAsync(batch);
 
-            return new OkObjectResult($"Removed {uid}");
+                return new OkObjectResult($"Removed {uid}");
+            }
+            catch (Exception e)
+            {
+                // Return 404 if process fails since most of the cases fail due to invalid IDs
+                log.LogCritical(e, "Deletion Failed");
+                return new NotFoundResult();
+            }
         }
 
         [FunctionName("lst")]
@@ -109,25 +118,34 @@ namespace AzureToDo
             [Table("todo")] CloudTable todoTable,
             ILogger log)
         {
-            if (!req.Query.ContainsKey("uid"))
+            if (!req.Query.ContainsKey("id"))
             {
                 return new BadRequestResult();
             }
 
-            string uid = req.Query["uid"];
+            string uid = req.Query["id"];
             Guid uuid;
             if (!Guid.TryParse(uid, out uuid))
             {
                 return new NotFoundResult();
             }
 
-            var query = new TableQuery<ToDoItem>().Where(
-                TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal, uid)
-            );
+            try
+            {
+                var query = new TableQuery<ToDoItem>().Where(
+                    TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal, uid)
+                );
 
-            var result = await todoTable.ExecuteQuerySegmentedAsync(query, null);
+                var result = await todoTable.ExecuteQuerySegmentedAsync(query, null);
 
-            return new OkObjectResult(result.Results.Select(e => e.ToToDoDTO()).First());
+                return new OkObjectResult(result.Results.Select(e => e.ToToDoDTO()).First());
+            }
+            catch (Exception e)
+            {
+                // Return 404 if process fails since most of the cases fail due to invalid IDs
+                log.LogCritical(e, "Get Failed");
+                return new NotFoundResult();
+            }
         }
 
         [FunctionName("done")]
@@ -138,33 +156,42 @@ namespace AzureToDo
             [Table("todo")] CloudTable todoTable,
             ILogger log)
         {
-            if (!req.Query.ContainsKey("uid"))
+            if (!req.Query.ContainsKey("id"))
             {
                 return new BadRequestResult();
             }
 
-            string uid = req.Query["uid"];
+            string uid = req.Query["id"];
             Guid uuid;
             if (!Guid.TryParse(uid, out uuid))
             {
                 return new NotFoundResult();
             }
 
-            var query = new TableQuery<ToDoItem>().Where(
-                TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal, uid)
-            );
+            try
+            {
+                var query = new TableQuery<ToDoItem>().Where(
+                    TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal, uid)
+                );
 
-            var result = await todoTable.ExecuteQuerySegmentedAsync(query, null);
+                var result = await todoTable.ExecuteQuerySegmentedAsync(query, null);
 
-            var elem = result.First();
-            elem.Done = true;
-            elem.DoneTimestamp = (long) DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
+                var elem = result.First();
+                elem.Done = true;
+                elem.DoneTimestamp = (long) DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
 
-            var batch = new TableBatchOperation();
-            batch.Replace(elem);
-            await todoTable.ExecuteBatchAsync(batch);
+                var batch = new TableBatchOperation();
+                batch.Replace(elem);
+                await todoTable.ExecuteBatchAsync(batch);
 
-            return new OkObjectResult(elem.ToToDoDTO());
+                return new OkObjectResult(elem.ToToDoDTO());
+            }
+            catch (Exception e)
+            {
+                // Return 404 if process fails since most of the cases fail due to invalid IDs
+                log.LogCritical(e, "Delete Failed");
+                return new NotFoundResult();
+            }
         }
     }
 
@@ -182,7 +209,7 @@ namespace AzureToDo
         }
 
         public string Title { get; set; }
-        public string Message { get; set; }
+        public string Description { get; set; }
         public long InsertionTimestamp { get; set; }
         public long DoneTimestamp { get; set; }
         public bool Done { get; set; }
@@ -193,7 +220,7 @@ namespace AzureToDo
             {
                 ID = ID,
                 Title = Title,
-                Message = Message,
+                Description = Description,
                 InsertionTimestamp = InsertionTimestamp,
                 Done = Done,
                 DoneTimestamp = DoneTimestamp,
@@ -203,9 +230,9 @@ namespace AzureToDo
 
     public class ToDoDTO
     {
-        [JsonProperty("id")] public string ID { get; set; }
+        [JsonProperty("ID")] public string ID { get; set; }
         [JsonProperty("title")] public string Title { get; set; }
-        [JsonProperty("message")] public string Message { get; set; }
+        [JsonProperty("description")] public string Description { get; set; }
         [JsonProperty("insertion_timestamp")] public long InsertionTimestamp { get; set; }
         [JsonProperty("done_timestamp")] public long DoneTimestamp { get; set; }
         [JsonProperty("done")] public bool Done { get; set; }

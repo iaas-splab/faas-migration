@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -57,7 +58,17 @@ func (endpoint api) ListItems() ([]ToDoItem, error) {
 	// Best Practice: Close body when Function is done...
 	defer res.Body.Close()
 
-	return nil, nil
+	data, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+	var output []ToDoItem
+	err = json.Unmarshal(data, &output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
 }
 
 func (endpoint api) InsertItem(i InsertRequest) (*ToDoItem, error) {
@@ -87,6 +98,50 @@ func (endpoint api) InsertItem(i InsertRequest) (*ToDoItem, error) {
 	return &item, nil
 }
 
+func (endpoint api) MarkAsDone(id string) error {
+	res, err := http.Post(fmt.Sprintf("%sdone?id=%s", endpoint, id), "application/json", bytes.NewReader([]byte{}))
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+	if res.StatusCode == 200 {
+		return nil
+	}
+	return errors.New(fmt.Sprintf("API returned status code: %d instead of 200", res.StatusCode))
+}
+func (endpoint api) DeleteItem(id string) error {
+	res, err := http.Post(fmt.Sprintf("%sdel?id=%s", endpoint, id), "application/json", bytes.NewReader([]byte{}))
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+	if res.StatusCode == 200 {
+		return nil
+	}
+	return errors.New(fmt.Sprintf("API returned status code: %d instead of 200", res.StatusCode))
+}
+
+func (endpoint api) GetItem(s string) (*ToDoItem, error) {
+	res, err := http.Get(fmt.Sprintf("%sget?id=%s", endpoint, s))
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+	if res.StatusCode != 200 {
+		return nil, errors.New(fmt.Sprintf("API returned status code: %d instead of 200", res.StatusCode))
+	}
+	data, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+	var item ToDoItem
+	err = json.Unmarshal(data, &item)
+	if err != nil {
+		return nil, err
+	}
+	return &item, nil
+}
+
 // -----------------------------------------------------------------------------
 // Main Method
 // -----------------------------------------------------------------------------
@@ -104,7 +159,16 @@ func main() {
 	api := api(appUrl)
 	api.CheckAvailability()
 	items := api.InsertItems()
-	api.CheckListItems(items)
+	api.CheckListItems(items, true, false)
+	doneItems := items[:25]
+	notDoneItems := items[25:]
+	api.MarkItemsAsDone(doneItems)
+	api.CheckListItems(doneItems, true, true)
+	api.CheckItemsNotDone(notDoneItems)
+	api.CheckDelete(items)
+	api.CheckListItems(items, false, false)
+	api.CheckFunctionsNotFoundBehaviour()
+	fmt.Println("Success! All Checks have passed!")
 }
 
 // -----------------------------------------------------------------------------
@@ -165,13 +229,115 @@ func (endpoint api) InsertItems() []ToDoItem {
 	return items
 }
 
-func (endpoint api) CheckListItems(items []ToDoItem) {
-	
+func (endpoint api) CheckListItems(items []ToDoItem, mustExist bool, checkIsDone bool) {
+	fmt.Printf("Requesting List of Items...")
+	itemsFromApp, err := endpoint.ListItems()
+	if err != nil {
+		fmt.Printf("Fail!\nError: %s\n", err.Error())
+		os.Exit(1)
+	}
+	fmt.Printf("Done!\nSearching for inserted items...")
+	for _, item := range items {
+		found := false
+		for _, ifa := range itemsFromApp {
+			if ifa.ID == item.ID && ifa.Title == item.Title &&
+				ifa.Description == item.Description {
+				found = true
+				if checkIsDone && ifa.DoneTimestamp == -1 {
+					fmt.Printf("Fail!\nFound item that is expected to be Done but is not!\n")
+					os.Exit(1)
+				}
+				break
+			}
+		}
+		if !found && mustExist {
+			fmt.Printf("Fail!\nCould not find an Item!\n")
+			os.Exit(1)
+		}
+		if found && !mustExist {
+			fmt.Printf("Fail!\nFound Item that should be deleted!!\n")
+			os.Exit(1)
+		}
+	}
+	fmt.Printf("Done!\n")
+}
+
+func (endpoint api) MarkItemsAsDone(items []ToDoItem) {
+	fmt.Printf("Marking %d items as Done...", len(items))
+
+	for _, item := range items {
+		err := endpoint.MarkAsDone(item.ID)
+		if err != nil {
+			fmt.Printf("Fail!\nError: %s\n", err.Error())
+			os.Exit(1)
+		}
+	}
+
+	fmt.Printf("Done!\n")
+}
+
+func (endpoint api) CheckItemsNotDone(items []ToDoItem) {
+	fmt.Printf("Using 'Get' Function to check if the %d items are Done...", len(items))
+
+	for _, item := range items {
+		i, err := endpoint.GetItem(item.ID)
+		if err != nil {
+			fmt.Printf("Fail!\nError: %s\n", err.Error())
+			os.Exit(1)
+		}
+		if i.ID != item.ID {
+			fmt.Printf("Fail!\nGet Item returned a different ID then queried.\n")
+			os.Exit(1)
+		}
+		if i.DoneTimestamp != -1 {
+			fmt.Printf("Fail!\nAn Item is marked as done while it should not!\n")
+			os.Exit(1)
+		}
+	}
+
+	fmt.Printf("Done!\n")
+}
+
+func (endpoint api) CheckDelete(items []ToDoItem) {
+	fmt.Printf("Deleting all inserted Items...")
+	for _, item := range items {
+		err := endpoint.DeleteItem(item.ID)
+		if err != nil {
+			fmt.Printf("Fail!\nError: %s\n", err.Error())
+			os.Exit(1)
+		}
+	}
+	fmt.Printf("Done!\n")
+}
+
+func (endpoint api) CheckFunctionsNotFoundBehaviour() {
+	fmt.Println("Checking ID specific functions API Behaviour if ID does not exist")
+	fmt.Printf("Get Function...")
+	_, err := endpoint.GetItem(NotFoundTestGuid)
+	if err == nil {
+		fmt.Printf("Fail!\nExpected Error. Got None.\n")
+		os.Exit(1)
+	}
+	fmt.Printf("Ok! Got error: %s\nDone Function...", err.Error())
+	err = endpoint.MarkAsDone(NotFoundTestGuid)
+	if err == nil {
+		fmt.Printf("Fail!\nExpected Error. Got None.\n")
+		os.Exit(1)
+	}
+	fmt.Printf("Ok! Got error: %s\nDelete Function...", err.Error())
+	err = endpoint.DeleteItem(NotFoundTestGuid)
+	if err == nil {
+		fmt.Printf("Fail!\nExpected Error. Got None.\n")
+		os.Exit(1)
+	}
+	fmt.Printf("Ok Got error: %s!\n", err.Error())
 }
 
 // -----------------------------------------------------------------------------
 // Utility Methods
 // -----------------------------------------------------------------------------
+
+const NotFoundTestGuid = "8324cf72-84c6-4001-bec2-46505dbe4301"
 
 const randomStringCharset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
 

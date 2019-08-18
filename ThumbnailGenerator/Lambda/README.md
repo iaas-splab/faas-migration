@@ -6,7 +6,7 @@ Implements the first use case on Amazon Web Services using Java and the serverle
 
 Assuming Java 8 (JDK) and Apache Maven are installed just run the following command to compile the source code:
 ```
-mvn clean package
+mvn clean install
 ```
 
 ## Deploying
