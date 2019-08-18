@@ -5,7 +5,7 @@ module.exports.handler = async function (context, item) {
 
   context.log(JSON.stringify(tempEvent));
 
-  let message = tempEvent.source + " has Forecasted " + tempEvent.forecast + " at " + tempEvent.place + " for " + tempEvent.forecast_for;
+  let message = tempEvent.source + " has Submitted a status change with the message "+ tempEvent.message;
 
   let evt = {
     type: tempEvent.type,

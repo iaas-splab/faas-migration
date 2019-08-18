@@ -1,27 +1,60 @@
 'use strict';
 
-module.exports.handler = async function (context, item) {
-  let tempEvent = item;
+const { Kafka, CompressionTypes, logLevel } = require('kafkajs')
 
-  context.log(JSON.stringify(tempEvent));
+const push = function(args,topic, messages) {
+  const kafka = new Kafka({
+    logLevel: logLevel.DEBUG,
+    brokers: args.kafka_brokers_sasl,
+    clientId: 'ingest-func',
+    ssl: {
+      ssl:true,
+      rejectUnauthorized: false
+    },
+    sasl: {
+      mechanism: 'plain',
+      username: args.username,
+      password: args.password,
+    },
+  });
+  let prod = kafka.producer();
+  await prod.connect();
+  await prod.send({
+    topic,
+    messages: messages
+  });
+  prod.disconnect();
+}
 
-  let message = "Measured Temperature "+ tempEvent.value + " on device "+  tempEvent.source;
+exports.main =  async function(args) {
+  let params = args;
+  console.log(JSON.stringify(args));
 
-  let evt = {
-    type: tempEvent.type,
-    source: tempEvent.source,
-    timestamp: tempEvent.timestamp,
-    formatting_timestamp: getUnixTime(),
-    message: message
+  var msgs = params.messages; 
+  var results = [];
+  for (var i = 0; i < msgs.length; i++) {
+    var tempEvent = msgs[i];
+
+    context.log(JSON.stringify(tempEvent));
+
+    let message = "Measured Temperature "+ tempEvent.value + " on device "+  tempEvent.source;
+
+    let evt = {
+      type: tempEvent.type,
+      source: tempEvent.source,
+      timestamp: tempEvent.timestamp,
+      formatting_timestamp: getUnixTime(),
+      message: message
+    }
+
+    let messageString = JSON.stringify(evt);
+    context.log(messageString);
+    results.push(evt);
   }
-
-  let messageString = JSON.stringify(evt);
-  context.log(messageString);
-
-  context.bindings.queueOutput = messageString;
-  return;  
-};
-
+  push(args,"dbingest",results);
+  return {
+  };
+}
 const getUnixTime = () => {
   return new Date().getTime()/1000|0
 }
