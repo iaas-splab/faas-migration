@@ -1,15 +1,20 @@
 service: bt-evtproc
 
 custom:
+  # Modify Queue names here
   temperature_format_topic: format-temperature
   forecast_format_topic: format-forecast
   state_change_format_topic: format-state-change
   error_topic: error
   sqs_queue_name: EventIngestQueue
   database:
+    # DO NOT CHANGE THIS
     db_name: aurora${opt:stage, self:provider.stage}
+    # Set the username of the administrator
     username: master
+    # Set the password of the administrator
     password: aCo2xeuph5wahr7s
+    # DO NOT CHANGE THE FOLLOWING PARAMETERS
     host:
       Fn::GetAtt: [AuroraRDSCluster, Endpoint.Address]
     port:

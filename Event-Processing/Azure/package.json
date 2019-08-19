@@ -1,7 +1,7 @@
 {
-  "name": "azure-nodejs",
+  "name": "azure-evtproc",
   "version": "1.0.0",
-  "description": "Azure Functions sample for the Serverless framework",
+  "description": "Azure implementation of the Event Processing use-case",
   "scripts": {
     "test": "echo \"No tests yet...\"",
     "start": "func host start"
@@ -14,7 +14,5 @@
     "mysql": "^2.17.1",
     "serverless-mysql": "^1.4.0"
   },
-  "devDependencies": {
-    "serverless-azure-functions": ">=0.7.0"
-  }
+  "devDependencies": {}
 }

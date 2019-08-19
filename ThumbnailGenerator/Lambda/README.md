@@ -29,7 +29,13 @@ To destroy the application you first have to make sure both buckets are empty. T
 the Web Interface and delete the contents of both the input and the output bucket. Removing the buckets themselves is not needed
 since the Serverless Frameworks CloudFormation Script will handle this for us.
 
-To destroy just run:
+Another option to delete the contents of the buckets is by the help of the AWS CLI. To remove contents in the bucket
+just run the following command for both buckets:
+```
+aws s3 rm s3://<S3_BUCKET_NAME> --recursive
+```
+
+To destroy the application just run:
 ```
 serverless remove -v
 ```

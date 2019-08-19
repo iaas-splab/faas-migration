@@ -20,6 +20,8 @@ Only when working with make:
 - `sponge` (moreutils)
 - A Previously created Resource Group
 
+Links to the tools mentioned here can be found in this [Document](/docs/tools.md)
+
 ## Deployment
 
 ### Variant 1: Using `make`
@@ -132,4 +134,3 @@ To update the deployment just rerun the deployment configuration.
 ## Removing the Deployed Application
 
 The deletion of the Application and its dependencies is not automated. It is therefore necessary to remove the resources manually. For example, by using the [Azure Portal Web Interface](https://portal.azure.com).
-

@@ -23,6 +23,8 @@ Deploying this application requires the following dependencies and prerequisites
 - GNU Make
 - `jq`
 
+Links to the tools mentioned here can be found in this [Document](/docs/tools.md)
+
 ## Deployment Guide
 
 To deploy the use-case first modify the following lines in the `Makefile` accordingly to suit your environment.
@@ -65,3 +67,7 @@ make create_rules
 ```
 
 Finally run `make create_api` to dpeloy the API mappings.
+
+## Removing the Application
+
+The services, triggers, API mappings and actions created for this application have to be removed manually. For example, using the Web UI.
