@@ -75,29 +75,29 @@ Apart from the Azure CLI and the Azure Functions Core Tools this approach also r
 First double press Shift to open the Command Window. There search for 'Sign in', Select the "Sign into Azure" option and press Enter.
 
 Next the follwoing window is shown. When using Device Login you will have to sign in to azure using your browser. Access is for Rider is granted by Pasting a code. Similiar to the login process for the Azure CLI
-![](https://i.imgur.com/x8bzXz8.png)
+![Select Login Type](/img/x8bzXz8.png)
 
 Once signed in slect the subscriptions you want to use.
-![](https://i.imgur.com/nrb1utu.png)
+![Select Subscriptions](/img/nrb1utu.png)
 
 #### Step 2: Creating the Deployment Configuration
 
 On the Top Right slect the Menu left to the Play Button (Usually named "Default"). Click on it and select "Edit Configurations"
-![](https://i.imgur.com/ZCsZLLP.png)
+![Edit Configurations](/img/ZCsZLLP.png)
 Click the "+" on the top left and select "Publish Function App"
-![](https://i.imgur.com/uGX9Iv4.png)
+![Add Configuration](/img/uGX9Iv4.png)
 Next select the options accordingly. As a Example a configuration to create all required resources is shown in the following screenshot.
-![](https://i.imgur.com/wMi4il8.png)
+![Configure Function App configuration](/img/wMi4il8.png)
 Once done Close the window by Clicking OK
 
 #### Step 3: Deploying
 Now Ensure your deployment configuration is selected (it should by default) and click the run button
-![](https://i.imgur.com/gUPwBWb.png)
+![Start Deployment Button](/img/gUPwBWb.png)
 
 The console output on the bottom shows the progress of the deployment.
-![](https://i.imgur.com/kid8wVq.png)
+![Deployment Started Output](/img/kid8wVq.png)
 After some time it should look like this:
-![](https://i.imgur.com/MLgOLGJ.png)
+![Deployment Done Output](/img/MLgOLGJ.png)
 
 #### Step 4: Updating the Deployment
 
