@@ -51,7 +51,7 @@ exports.main =  async function(args) {
     context.log(messageString);
     results.push(evt);
   }
-  push(args,"dbingest",results);
+  push(args,"db-ingest",results);
   return {
   };
 }

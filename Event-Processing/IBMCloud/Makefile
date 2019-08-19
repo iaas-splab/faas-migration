@@ -1,5 +1,16 @@
+#############################################################################
+######## CONFIGURATION ######################################################
+#############################################################################
+
+# Define the Name and Space of your Cloud Foundry organzation accordingly
+# The Makefile assumes this namespace is selected using "ibmcloud fn property --namespace"
+# and "ibmcloud targed" appropriately
 CF_ORG_NAME := kaffemuehle@posteo.de
 CF_ORG_SPACE := dev
+
+#############################################################################
+######## CONSTANT DEFINITON #################################################
+#############################################################################
 
 MYSQL_SERVICE_NAME := evtproc-sql
 MYSQL_CREDENTIALS_NAME := evtproc-sql-creds
@@ -21,6 +32,10 @@ DB_INGEST_TRIGGER := dbingest-trigger
 KAFKA_BINDING_NAME := Bluemix_$(EVENT_STREAMS_ALIAS_NAME)_$(EVENT_STREAMS_CREDENTIALS_NAME)
 KAFKA_BINDING_PATH := /$(CF_ORG_NAME)_$(CF_ORG_SPACE)/$(KAFKA_BINDING_NAME)/messageHubFeed
 
+#############################################################################
+######## MAKE STEPS #########################################################
+#############################################################################
+
 create_kafka:
 	ibmcloud resource service-instance-create $(EVENT_STREAMS_SERVICE_NAME) messagehub standard eu-de
 	ibmcloud resource service-alias-create $(EVENT_STREAMS_ALIAS_NAME) --instance-name $(EVENT_STREAMS_SERVICE_NAME)
@@ -38,6 +53,7 @@ create_topics:
 	ibmcloud es topic-create $(EVENT_STREAMS_STATE_CHANGE_EVENTS_TOPIC_NAME)
 	ibmcloud es topic-create $(EVENT_STREAMS_TEMPERATURE_EVENTS_TOPIC_NAME)
 
+# Create the Event Streams instance and the database before waiting 30 seconds to create the topics
 create_resources: create_kafka create_database sleep_30 create_topics
 
 create_database:
@@ -97,3 +113,14 @@ create_triggers:
 	ibmcloud fn trigger create $(FORECAST_TRIGGER_NAME) -f $(KAFKA_BINDING_PATH) -p topic $(EVENT_STREAMS_FORECAST_EVENTS_TOPIC_NAME) -p isJSONData true
 	ibmcloud fn trigger create $(STATE_CHANGE_TRIGGER_NAME) -f $(KAFKA_BINDING_PATH )-p topic $(EVENT_STREAMS_STATE_CHANGE_EVENTS_TOPIC_NAME) -p isJSONData true
 	ibmcloud fn trigger create $(DB_INGEST_TRIGGER_NAME) -f $(KAFKA_BINDING_PATH) -p topic $(EVENT_STREAMS_DB_INGEST_TOPIC_NAME) -p isJSONData true
+
+create_rules: 
+	ibmcloud fn rule create $(TEMPERATURE_TRIGGER_NAME)-rule $(TEMPERATURE_TRIGGER_NAME) format-temperature
+	ibmcloud fn rule create $(FORECAST_TRIGGER_NAME)-rule $(FORECAST_TRIGGER_NAME) format-forecast
+	ibmcloud fn rule create $(STATE_CHANGE_TRIGGER_NAME)-rule $(STATE_CHANGE_TRIGGER_NAME) format-state-change
+	ibmcloud fn rule create $(DB_INGEST_TRIGGER_NAME)-rule $(DB_INGEST_TRIGGER_NAME) eventinserter
+
+create_api:
+	ibmcloud fn api create /evtproc /list get list --response-type http
+	ibmcloud fn api create /evtproc /latest get latest --response-type http
+	ibmcloud fn api create /evtproc /ingest post ingest --response-type http
