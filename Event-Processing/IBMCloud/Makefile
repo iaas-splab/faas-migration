@@ -6,7 +6,7 @@
 # The Makefile assumes this namespace is selected using "ibmcloud fn property --namespace"
 # and "ibmcloud targed" appropriately
 CF_ORG_NAME := kaffemuehle@posteo.de
-CF_ORG_SPACE := dev-uss
+CF_ORG_SPACE := dev
 
 #############################################################################
 ######## CONSTANT DEFINITON #################################################

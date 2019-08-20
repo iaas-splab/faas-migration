@@ -20,6 +20,7 @@ import (
 
 var (
 	endpoint = flag.String("endpoint", "undefined", "The endpoint to the ToDo API implementation")
+	count    = flag.Int("count", 50, "The number of items to insert.")
 )
 
 func init() {
@@ -65,7 +66,7 @@ func (endpoint api) ListItems() ([]ToDoItem, error) {
 	var output []ToDoItem
 	err = json.Unmarshal(data, &output)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Contents: %s Original Error: %s", string(data), err.Error())
 	}
 
 	return output, nil
@@ -92,7 +93,7 @@ func (endpoint api) InsertItem(i InsertRequest) (*ToDoItem, error) {
 	var item ToDoItem
 	err = json.Unmarshal(resdata, &item)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Contents: %s Original Error: %s", string(data), err.Error())
 	}
 
 	return &item, nil
@@ -137,7 +138,7 @@ func (endpoint api) GetItem(s string) (*ToDoItem, error) {
 	var item ToDoItem
 	err = json.Unmarshal(data, &item)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Contents: %s Original Error: %s", string(data), err.Error())
 	}
 	return &item, nil
 }
@@ -160,8 +161,10 @@ func main() {
 	api.CheckAvailability()
 	items := api.InsertItems()
 	api.CheckListItems(items, true, false)
-	doneItems := items[:25]
-	notDoneItems := items[25:]
+	bound := (*count)/2
+	fmt.Printf("Using Bound %d\n",bound)
+	doneItems := items[:bound]
+	notDoneItems := items[bound:]
 	api.MarkItemsAsDone(doneItems)
 	api.CheckListItems(doneItems, true, true)
 	api.CheckItemsNotDone(notDoneItems)
@@ -188,10 +191,10 @@ func (endpoint api) CheckAvailability() {
 }
 
 func (endpoint api) InsertItems() []ToDoItem {
-	fmt.Printf("Inserting 50 ToDo Items...")
+	fmt.Printf("Inserting %d ToDo Items...", *count)
 	insertionRequests := make([]InsertRequest, 0)
 	items := make([]ToDoItem, 0)
-	for i := 0; i < 50; i++ {
+	for i := 0; i < *count; i++ {
 		ireq := InsertRequest{
 			Title:       fmt.Sprintf("Todo-Item-#%d", i),
 			Description: GenerateRandomString(300),
