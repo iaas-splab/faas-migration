@@ -1,9 +1,8 @@
 'use strict';
 
-exports.main =  async function(args) {
-  let params = args;
-  console.log(JSON.stringify(args));
+const createDBQuery = "CREATE TABLE IF NOT EXISTS events (ID int unsigned NOT NULL auto_increment PRIMARY KEY, source VARCHAR(255) NOT NULL, timestamp int unsigned NOT NULL, message VARCHAR(1000) NOT NULL);"
 
+const parseDatabaseCredentials = function(args) {
   let dburl = args.uri.toString().replace("mysql://","");
   let spliturl = dburl.split("@");
   let creds = spliturl[0].split(":");
@@ -15,30 +14,34 @@ exports.main =  async function(args) {
   let port = hostnamePort[1];
   let db = hostDb[1];
 
-  console.log(JSON.stringify({
+  return {
     user: username,
     pass: password,
     db: db,
     host: hostname,
-    port: port
-  }));
+    port: parseInt(port, 10)
+  };
+}
 
-  const createDBQuery = "CREATE TABLE IF NOT EXISTS events (ID int unsigned NOT NULL auto_increment PRIMARY KEY, source VARCHAR(255) NOT NULL, timestamp int unsigned NOT NULL, message VARCHAR(1000) NOT NULL);"
+exports.main =  async function(args) {
+  let params = args;
+  console.log(JSON.stringify(args));
+
+  let creds = parseDatabaseCredentials(args);
 
   const mysql = require('serverless-mysql')({
     config: {
-      database: db,
-      user: username,
-      password: password,
-      host: hostname,
-      port: parseInt(port,10),
+      database: creds.db,
+      user: creds.username,
+      password: creds.password,
+      host: creds.hostname,
+      port: creds.port,
       ssl: {
         rejectUnauthorized: false
       }
     }
   });
-
-  let creationResult = await mysql.query(createDBQuery);
+  await mysql.query(createDBQuery);
 
   let result = await mysql.query({
     sql: 'SELECT * FROM events ORDER BY ID DESC LIMIT 1;',

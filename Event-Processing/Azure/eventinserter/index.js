@@ -16,7 +16,7 @@ module.exports.handler = async function (context, item) {
     }
   });
 
-  let creationResult = await mysql.query(createDBQuery);
+  await mysql.query(createDBQuery);
   let evt = item;
   let insertResult = await mysql.query({
     sql: 'INSERT INTO events(source, timestamp, message) VALUES (?, ?, ?);',

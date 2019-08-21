@@ -22,6 +22,7 @@ module.exports.handler = async function (context, item) {
   context.bindings.queueOutput = messageString;
   return;  
 };
+
 const getUnixTime = () => {
   return new Date().getTime()/1000|0
 }

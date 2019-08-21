@@ -16,8 +16,7 @@ module.exports.handler = async function (context, req) {
     }
   });
 
-  let creationResult = await mysql.query(createDBQuery);
-
+  await mysql.query(createDBQuery);
 
   let result = await mysql.query({
     sql: 'SELECT * FROM events ORDER BY ID DESC LIMIT 1;',
