@@ -38,12 +38,7 @@ namespace MatrixMul.Tests
         {
             return _results[id];
         }
-
-        public bool HasResultMatrix(string id)
-        {
-            return _results.ContainsKey(id);
-        }
-
+        
         public void DeleteResultMatrix(string id)
         {
             // Nothing to Do here

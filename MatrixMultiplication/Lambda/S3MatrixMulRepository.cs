@@ -48,12 +48,7 @@ namespace MatrixMul.Lambda
         {
             return serializer.Deserialize<Matrix>(transferUtility.OpenStream(bucketName, GetResultKey(id)));
         }
-
-        public bool HasResultMatrix(string id)
-        {
-            return true;
-        }
-
+        
         public void DeleteResultMatrix(string id)
         {
             Console.WriteLine("Removing Result Matrix " + id);

@@ -89,12 +89,7 @@ namespace MatrixMul.IBMCloud
 
             return JsonConvert.DeserializeObject<Matrix>(Encoding.UTF8.GetString(ms.ToArray()));
         }
-
-        public bool HasResultMatrix(string id)
-        {
-            return true;
-        }
-
+        
         public void DeleteResultMatrix(string id)
         {
             Task.WaitAll(_client.RemoveObjectAsync(_bucketName, GetResultKey(id)));
