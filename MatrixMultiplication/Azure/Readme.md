@@ -18,3 +18,5 @@ It supports the Following Query Parameters:
 - `callback`: placing a URL here will cause the CreateReport function to send a HTTP POST request to the set URL with thre rport attached as JSON body.
 
 All these parameters are optional and can be ommited. If so defaults are used!
+
+More details on how the workflow is invoked can be found in the General matrix multiplication [Readme](../Readme.md).

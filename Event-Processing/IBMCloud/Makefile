@@ -109,8 +109,8 @@ update_actions: package
 	ibmcloud fn action update latest --web true --kind nodejs:10 out/latest.zip -P sql_creds.json -a final true
 
 create_triggers:
-	ibmcloud fn trigger create $(TEMPERATURE_TRIGGER_NAME) -f $(KAFKA_BINDING_PATH) -p topic $(EVENT_STREAMS_TEMPERATURE_EVENTS_TOPIC_NAME) -p isJSONData true
 	ibmcloud fn trigger create $(FORECAST_TRIGGER_NAME) -f $(KAFKA_BINDING_PATH) -p topic $(EVENT_STREAMS_FORECAST_EVENTS_TOPIC_NAME) -p isJSONData true
+	ibmcloud fn trigger create $(TEMPERATURE_TRIGGER_NAME) -f $(KAFKA_BINDING_PATH) -p topic $(EVENT_STREAMS_TEMPERATURE_EVENTS_TOPIC_NAME) -p isJSONData true
 	ibmcloud fn trigger create $(STATE_CHANGE_TRIGGER_NAME) -f $(KAFKA_BINDING_PATH )-p topic $(EVENT_STREAMS_STATE_CHANGE_EVENTS_TOPIC_NAME) -p isJSONData true
 	ibmcloud fn trigger create $(DB_INGEST_TRIGGER_NAME) -f $(KAFKA_BINDING_PATH) -p topic $(EVENT_STREAMS_DB_INGEST_TOPIC_NAME) -p isJSONData true
 

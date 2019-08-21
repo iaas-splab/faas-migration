@@ -28,7 +28,7 @@ deploy: deploy_actions deploy_workflow
 update: update_actions deploy_workflow
 
 invoke:
-	ibmcloud fn action invoke workflow -P redis_credentials.json
+	ibmcloud fn action invoke workflow -r -P redis_credentials.json
 
 destroy_actions:
 	ibmcloud fn action delete create-matrix
@@ -36,6 +36,16 @@ destroy_actions:
 	ibmcloud fn action delete distribute-work
 	ibmcloud fn action delete build-result
 	ibmcloud fn action delete generate-report
+	ibmcloud fn action delete workflow
+	ibmcloud fn action delete choose-type
+	ibmcloud fn action delete set-worker-count
+	ibmcloud fn action delete set-worker-id-0
+	ibmcloud fn action delete set-worker-id-1
+	ibmcloud fn action delete set-worker-id-2
+	ibmcloud fn action delete set-worker-id-3
+	ibmcloud fn action delete set-worker-id-4
+	ibmcloud fn action delete cleanup-context
+	ibmcloud fn action delete zero-out-worker-count
 
 clean:
 	rm -rvf bin/
