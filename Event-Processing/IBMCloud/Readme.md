@@ -4,11 +4,11 @@
 
 This implmentation is untested because deployment on IBM Cloud seems to fail due to an error on the Server side.
 When attempting the creation of the Triggers subscribing to `messageHubFeed` the Trigger creation fails because the IBM
-provided credentials are invalid. Setting the credentials manually also fails. An attmpt of deploying a Example action from the Web UI also fails, however it only displays a very generic error message there.
+provided credentials are invalid. Setting the credentials manually also fails. An attmpt of deploying a Example action from the Web UI also fails, however it only displays a very generic error message there. Whats causing this is unknown. The issue might only occur with our IBM Cloud account.
+
+We have contacted IBM because of this issue. As of now a resolution of this problem is not (yet) existant.
 
 An example of the produced error is found in the [trigger_creation_failure.txt](trigger_creation_failure.txt) File
-
-This [Asciicast](https://asciinema.org/a/6RpwJ3FTCbuuRe6n3olUfr18r) shows the failure of the trigger generation during deployment.
 
 To implement the trigger generation the this [Docuemntation Page](https://cloud.ibm.com/docs/openwhisk?topic=cloud-functions-pkg_event_streams#eventstreams_pkg) was used.
 

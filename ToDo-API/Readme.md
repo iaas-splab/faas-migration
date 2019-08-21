@@ -1,7 +1,7 @@
 # ToDo API
 
 This Directory contains the implementations of the ToDo API on Microsoft Azure. The other implementations are based on Go and can be found under
-https://github.com/c-mueller/faas-migration-go
+https://github.com/iaas-splab/faas-migration-go
 
 ## Running the Tests
 

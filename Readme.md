@@ -87,7 +87,7 @@ To implement the use-cases we have used the following IDEs:
 
 ## Directory Structure
 
-The Use-Cases are grouped together in a Directory in the Root Directory. In the Directory for every use-case the provider specific implementation can be found. Implementations for AWS can be located in the `Lambda` subdirectory, implentations for Microsoft Azure in the `Azure` directory and IBM Cloud implementations in the `IBMCloud` directory. With two exceptions: The ToDo API implementations for IBMCloud and AWS Lambda are located in a different repository since these are implemented in Go. Their implementation can be found [here](https://github.com/c-mueller/faas-migration-go/).
+The Use-Cases are grouped together in a Directory in the Root Directory. In the Directory for every use-case the provider specific implementation can be found. Implementations for AWS can be located in the `Lambda` subdirectory, implentations for Microsoft Azure in the `Azure` directory and IBM Cloud implementations in the `IBMCloud` directory. With two exceptions: The ToDo API implementations for IBMCloud and AWS Lambda are located in a different repository since these are implemented in Go. Their implementation can be found [here](https://github.com/iaas-splab/faas-migration-go).
 
 Every Implementation has a Readme file describing the steps needed to deploy the use case.
 
