@@ -1,11 +1,12 @@
-# Thumbnail Generator
+# Thumbnail Generator - AWS Implementation
 
 Implements the first use case on Amazon Web Services using Java and the serverless framework
 
 ## Buiilding
 
 Assuming Java 8 (JDK) and Apache Maven are installed just run the following command to compile the source code:
-```
+
+```bash
 mvn clean install
 ```
 
@@ -19,7 +20,8 @@ custom:
 ```
 
 After the code has been built it can be deployed by running:
-```
+
+```bash
 serverless deploy -v
 ```
 
@@ -31,12 +33,14 @@ since the Serverless Frameworks CloudFormation Script will handle this for us.
 
 Another option to delete the contents of the buckets is by the help of the AWS CLI. To remove contents in the bucket
 just run the following command for both buckets:
-```
+
+```bash
 aws s3 rm s3://<S3_BUCKET_NAME> --recursive
 ```
 
 To destroy the application just run:
-```
+
+```bash
 serverless remove -v
 ```
 
@@ -51,7 +55,23 @@ A simple upload function is also deployed to simplify the upload
 Sample command:
 
 ```bash
-cat img.png | base64 | curl -H "Content-Type: image/png" -d @- https://8afuw3tgc3.execute-api.us-east-1.amazonaws.com/dev/upload
+cat img.png | base64 -w0 | curl -H "Content-Type: image/png" -d @- "https://8afuw3tgc3.execute-api.us-east-1.amazonaws.com/dev/upload?filename=img.png"
 ```
 
-To check if the thumbnail generation worked we also call a Discord webhook, can be disabled by setting the url to a empty string.
+Setting the filename is optional. If it is not set the function will compute the SHA256 hash of the uploaded image and use it as filename.
+
+## Testing
+
+Testing can be done by uploading the images in the [test-images](../test-images) Directory using the command described above. 
+
+To verify that the conversion has been executed you can use the following command of the AWS CLI:
+
+```bash
+aws s3 ls <Output Bucket Name>
+```
+
+To check if the upload was successful you can use the same command with the bucket name of the input bucket. The download of the images can be done by running the following command
+
+```bash
+aws s3 cp s3://<Output Bucket Name>/<Filename in Bucket> <Output Path on local Filesystem>
+```

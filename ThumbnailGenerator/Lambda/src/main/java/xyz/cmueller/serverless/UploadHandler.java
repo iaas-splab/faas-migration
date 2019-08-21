@@ -25,9 +25,16 @@ import static xyz.cmueller.serverless.Config.VALID_MIME_TYPES;
 public class UploadHandler implements RequestHandler<APIGatewayProxyRequestEvent, ApiGatewayResponse> {
     private static final Logger LOG = LogManager.getLogger(UploadHandler.class);
     private AmazonS3Client client = new AmazonS3Client();
+
     @Override
     public ApiGatewayResponse handleRequest(APIGatewayProxyRequestEvent input, Context context) {
         String mimeType = input.getHeaders().getOrDefault("Content-Type", "unset");
+        boolean hasFilename = false;
+        String filename = "";
+        if (input.getQueryStringParameters().containsKey("filename")) {
+            hasFilename = true;
+            filename = input.getQueryStringParameters().get("filename");
+        }
         if (mimeType.equals("unset")) {
             mimeType = input.getHeaders().getOrDefault("content-type", "unset");
         }
@@ -46,17 +53,21 @@ public class UploadHandler implements RequestHandler<APIGatewayProxyRequestEvent
             return respond(400, "Body must be Encoded in Base64");
         }
 
-        String hash = Hex.encodeHexString(DigestUtils.digest(DigestUtils.getSha256Digest(), body));
+        if (!hasFilename) {
+            filename = Hex.encodeHexString(DigestUtils.digest(DigestUtils.getSha256Digest(), body));
+        }
 
         ByteArrayInputStream in = new ByteArrayInputStream(body);
 
-        PutObjectResult response = client.putObject(IMAGE_UPLOAD_BUCKET, hash, in, new ObjectMetadata());
+        PutObjectResult response = client.putObject(IMAGE_UPLOAD_BUCKET, filename, in, new ObjectMetadata());
 
-        return respond(200, hash);
+        return respond(200, filename);
     }
+
     private ApiGatewayResponse respond(int code, String message) {
         return respond(code, message, new HashMap<>());
     }
+
     private ApiGatewayResponse respond(int code, String message, Map<String, Object> additional) {
         Map<String, Object> payload = new HashMap<>();
         payload.put("code", code);

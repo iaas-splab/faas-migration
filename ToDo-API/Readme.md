@@ -81,9 +81,9 @@ This function Produces the following status codes:
 - 200: Sucess, the Item was deleted
 - 400: The `id` is not set
 - 404: The given ID was invalid
+The `/put` function consumes an ItemCreation Request
 
 ### ToDo Item
-
 
 ```json
 {
@@ -100,7 +100,6 @@ This function Produces the following status codes:
 - `description`: The description of the message
 - `insertion_timestamp`: The unix timestamp of the time when the event was inserted into the database
 - `done_timestamp`: The Timestamp at which the item was marked as done. If the value is -1 the item is not marked as done.
-
 
 ### ItemCreation Request
 

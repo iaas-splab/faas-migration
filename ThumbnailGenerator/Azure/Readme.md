@@ -23,6 +23,8 @@ make deploy
 
 This will compile the functon. This command will also create resources if they do not exist. For example it will create a StorageAccount instance with a "random looking" name that is used for storing the images and the functions payload. It will also create the `input` and `output` containers used to store the images and thumbnails.
 
+This command is also used to update the deployment.
+
 ## Running locally
 
 Unlike other implementations local execution only works after the application has been deployed. Thats because of the storage account created by maven. To locally run the functions after the deployment has finished just run
@@ -40,6 +42,8 @@ To upload a image using the `Upload-Image` Function it must be encoded as Base64
 ```bash
 cat <FileName> | base64 -w0 | curl -v -d @- "https://<FunctionApp Name>.azurewebsites.net/api/Upload-Image?name=<FileNameInBlobStorage>"
 ```
+
+To test the functionality of the use-case we are providing some PNG files containing two images ([See test-images](../test-images)). The folder also contains the expected result for both files.
 
 ### Verifying the contents
 

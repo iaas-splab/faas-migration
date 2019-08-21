@@ -11,7 +11,6 @@ OBJECT_STORAGE_SECRET_KEY := d06b121718b21dbe694fb2be6963d91137b47c884040adf1
 OBJECT_STORAGE_ENDPOINT := s3.us-south.cloud-object-storage.appdomain.cloud
 
 # NAME DEFINITION
-
 NAMESPACE_NAME := tgen-uss
 PACKAGE_BINDING_NAME := tgen-os-binding
 TRIGGER_NAME := tgen-os-trigger
