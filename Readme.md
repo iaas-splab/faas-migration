@@ -1,6 +1,6 @@
-# Practical Aspects of FaaS Applications' Migration
+# Practical Aspects of FaaS Applications' Migration - Implemtentations
 
-This Repository contains the implementation of the Use Cases used in my Bachelor Thesis.
+This Repository contains the implementation of the Use Cases used in my Bachelor Thesis. The PDF verison of the Thesis can be found [here](docs/misc/thesis.pdf)
 
 ## General Documentation
 
