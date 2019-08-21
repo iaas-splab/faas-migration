@@ -36,7 +36,10 @@ create_function_app:
 	az resource create -g $(RESOURCE_GROUP_NAME) -n $(APPINSIGHTS_NAME) --resource-type "Microsoft.Insights/components" --properties '{"Application_Type":"web"}'
 	az functionapp create -g $(RESOURCE_GROUP_NAME) -n $(FUNCTION_APP_NAME) --storage-account $(STORAGE_ACCOUNT_NAME) --consumption-plan-location $(AZURE_REGION) --app-insights $(APPINSIGHTS_NAME) --runtime dotnet
 
-deploy: init create_function_app build
+sleep_20:
+	sleep 20
+
+deploy: init create_function_app build sleep_20
 	func azure functionapp publish $(FUNCTION_APP_NAME)
 	func azure functionapp publish $(FUNCTION_APP_NAME) -o
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using MatrixMul.Core;
 using Microsoft.VisualBasic.CompilerServices;
+using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -155,7 +156,7 @@ namespace MatrixMul.Tests
             Assert.Equal(0, report.ResultMatrix.Minimum);
             Assert.Equal(99, report.ResultMatrix.Maximum);
         }
-        
+
         [Fact]
         public void TestSerialMulBySeed()
         {
@@ -254,6 +255,42 @@ namespace MatrixMul.Tests
             Assert.Equal(49, report.ResultMatrix.Average);
             Assert.Equal(0, report.ResultMatrix.Minimum);
             Assert.Equal(99, report.ResultMatrix.Maximum);
+        }
+
+        [Fact]
+        public void GetParallelTestReport()
+        {
+            var start = Util.GetUnixTimestamp();
+            _out.WriteLine($"Creating 2 {Size}x{Size} Matrices with Max Value {Max} based on seed {Seed}");
+            var id = hndlr.CreateMatrix(Size, Max, Seed);
+            _out.WriteLine($"Got ID {id}");
+
+            _out.WriteLine($"Running serial Multiply");
+            hndlr.SerialMultiply(id);
+
+            _out.WriteLine("Creating Report");
+            var report = hndlr.GenerateReport(null, start, id, 0);
+
+            var reportstr = JsonConvert.SerializeObject(report);
+            _out.WriteLine(reportstr);
+        }
+        
+        [Fact]
+        public void GetSerialTestReport()
+        {
+            var start = Util.GetUnixTimestamp();
+            _out.WriteLine($"Creating 2 {Size}x{Size} Matrices with Max Value {Max} based on seed {Seed}");
+            var id = hndlr.CreateMatrix(9, Max, Seed);
+            _out.WriteLine($"Got ID {id}");
+
+            _out.WriteLine($"Running serial Multiply");
+            hndlr.SerialMultiply(id);
+
+            _out.WriteLine("Creating Report");
+            var report = hndlr.GenerateReport(null, start, id, 0);
+
+            var reportstr = JsonConvert.SerializeObject(report);
+            _out.WriteLine(reportstr);
         }
     }
 }

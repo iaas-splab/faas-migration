@@ -221,7 +221,7 @@ namespace MatrixMul.Azure
                     MatrixSize = matrixSize,
                     DoCallback = hasCallback,
                     CallbackURL = callback,
-                    Seed = -1
+                    Seed = (int) seed,
                 });
 
             log.LogInformation($"Started orchestration with ID = '{instanceId}' with Matrix Size n={matrixSize}.");
