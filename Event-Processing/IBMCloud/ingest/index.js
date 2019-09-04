@@ -1,29 +1,10 @@
 'use strict';
 
-const { Kafka, CompressionTypes, logLevel } = require('kafkajs')
-
-const push = function(args, topic, messages) {
-  const kafka = new Kafka({
-    logLevel: logLevel.DEBUG,
-    brokers: args.kafka_brokers_sasl,
-    clientId: 'ingest-func',
-    ssl: {
-      ssl:true,
-      rejectUnauthorized: false
-    },
-    sasl: {
-      mechanism: 'plain',
-      username: args.username,
-      password: args.password,
-    },
-  });
-  let prod = kafka.producer();
-  await prod.connect();
-  await prod.send({
-    topic,
-    messages: messages
-  });
-  prod.disconnect();
+const openwhisk = require('openwhisk')
+const push = async function(args, topic, message) {
+  console.log("Submitting Message")
+  console.log(JSON.stringify(message))
+  return openwhisk().actions.invoke({actionName: args.binding_name+"/messageHubProduce", params: {topic: topic, value: JSON.stringify(message)}});
 }
 
 exports.main =  async function(args) {
@@ -57,7 +38,9 @@ exports.main =  async function(args) {
     }
   }
 
-  push(args,topic,[message]);
+  message.__ow_headers = null;
+
+  push(args,topic,message);
 
   let result = {};
 

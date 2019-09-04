@@ -32,9 +32,9 @@ exports.main =  async function(args) {
   const mysql = require('serverless-mysql')({
     config: {
       database: creds.db,
-      user: creds.username,
-      password: creds.password,
-      host: creds.hostname,
+      user: creds.user,
+      password: creds.pass,
+      host: creds.host,
       port: creds.port,
       ssl: {
         rejectUnauthorized: false

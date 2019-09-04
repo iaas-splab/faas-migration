@@ -28,21 +28,39 @@ exports.main =  async function(args) {
   console.log(JSON.stringify(args));
 
   let creds = parseDatabaseCredentials(args);
+  console.log(JSON.stringify(creds));
 
+  console.log("Connecting to MySQL");
   const mysql = require('serverless-mysql')({
     config: {
       database: creds.db,
-      user: creds.username,
-      password: creds.password,
-      host: creds.hostname,
+      user: creds.user,
+      password: creds.pass,
+      host: creds.host,
       port: creds.port,
       ssl: {
         rejectUnauthorized: false
       }
     }
   });
-  await mysql.query(createDBQuery);
+  console.log("Creating DB");
+  try{
+    await mysql.query(createDBQuery);
+  } catch(e) {
+    console.log(e);
+    return {
+      statuscode: 500,
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: {
+        success: false,
+        error: e.toString()
+      }
+  };
+  }
 
+  console.log("Querying");
   let result = await mysql.query({
     sql: 'SELECT * FROM events ORDER BY ID DESC LIMIT 1;',
     timeout: 10000

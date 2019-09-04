@@ -32,9 +32,9 @@ exports.main =  async function(args) {
   const mysql = require('serverless-mysql')({
     config: {
       database: creds.db,
-      user: creds.username,
-      password: creds.password,
-      host: creds.hostname,
+      user: creds.user,
+      password: creds.pass,
+      host: creds.host,
       port: creds.port,
       ssl: {
         rejectUnauthorized: false
@@ -46,7 +46,7 @@ exports.main =  async function(args) {
   var msgs = params.messages; 
   var results = [];
   for (var i = 0; i < msgs.length; i++) {
-    var item = msgs[i];
+    var item = msgs[i].value;
     
     let evt = item;
     let insertResult = await mysql.query({

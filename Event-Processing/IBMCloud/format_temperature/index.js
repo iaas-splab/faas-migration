@@ -1,29 +1,10 @@
 'use strict';
 
-const { Kafka, CompressionTypes, logLevel } = require('kafkajs')
-
-const push = function(args,topic, messages) {
-  const kafka = new Kafka({
-    logLevel: logLevel.DEBUG,
-    brokers: args.kafka_brokers_sasl,
-    clientId: 'ingest-func',
-    ssl: {
-      ssl:true,
-      rejectUnauthorized: false
-    },
-    sasl: {
-      mechanism: 'plain',
-      username: args.username,
-      password: args.password,
-    },
-  });
-  let prod = kafka.producer();
-  await prod.connect();
-  await prod.send({
-    topic,
-    messages: messages
-  });
-  prod.disconnect();
+const openwhisk = require('openwhisk')
+const push = async function(args, topic, message) {
+  console.log("Submitting Message")
+  console.log(JSON.stringify(message))
+  return openwhisk().actions.invoke({actionName: args.binding_name+"/messageHubProduce", params: {topic: topic, value: JSON.stringify(message)}});
 }
 
 exports.main =  async function(args) {
@@ -32,10 +13,12 @@ exports.main =  async function(args) {
 
   var msgs = params.messages; 
   var results = [];
+  console.log("Got "+msgs.length+" Messages");
   for (var i = 0; i < msgs.length; i++) {
-    var tempEvent = msgs[i];
+    var tempEvent = msgs[i].value;
 
-    context.log(JSON.stringify(tempEvent));
+    console.log("processing message #"+i);
+    console.log(JSON.stringify(tempEvent));
 
     let message = "Measured Temperature "+ tempEvent.value + " on device "+  tempEvent.source;
 
@@ -48,10 +31,14 @@ exports.main =  async function(args) {
     }
 
     let messageString = JSON.stringify(evt);
-    context.log(messageString);
+    console.log(messageString);
     results.push(evt);
   }
-  push(args,"db-ingest",results);
+  for(let e of results) {
+    console.log("Sending Message")
+    push(args,"db-ingest",e);
+  }
+ 
   return {
   };
 }

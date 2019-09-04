@@ -27,7 +27,7 @@ EVENT_STREAMS_DB_INGEST_TOPIC_NAME := db-ingest
 TEMPERATURE_TRIGGER_NAME := temp-trigger
 FORECAST_TRIGGER_NAME := forecast-trigger
 STATE_CHANGE_TRIGGER_NAME := statechange-trigger
-DB_INGEST_TRIGGER := dbingest-trigger
+DB_INGEST_TRIGGER_NAME := dbingest-trigger
 
 KAFKA_BINDING_NAME := Bluemix_$(EVENT_STREAMS_ALIAS_NAME)_$(EVENT_STREAMS_CREDENTIALS_NAME)
 KAFKA_BINDING_PATH := /$(CF_ORG_NAME)_$(CF_ORG_SPACE)/$(KAFKA_BINDING_NAME)/messageHubFeed
@@ -92,26 +92,26 @@ clean:
 
 deploy_actions: package
 	ibmcloud fn action create eventinserter --kind nodejs:10 out/eventinserter.zip -P sql_creds.json -a final true
-	ibmcloud fn action create format-forecast --kind nodejs:10 out/format_forecast.zip -P kafka_creds.json -a final true
-	ibmcloud fn action create format-temperature --kind nodejs:10 out/format_temperature.zip -P kafka_creds.json -a final true
-	ibmcloud fn action create format-state-change --kind nodejs:10 out/format_state_change.zip -P kafka_creds.json -a final true
-	ibmcloud fn action create ingest --web true --kind nodejs:10 out/ingest.zip -P kafka_creds.json -a final true
+	ibmcloud fn action create format-forecast --kind nodejs:10 out/format_forecast.zip -P kafka_creds.json -p binding_name $(KAFKA_BINDING_NAME) -a final true
+	ibmcloud fn action create format-temperature --kind nodejs:10 out/format_temperature.zip -P kafka_creds.json -p binding_name $(KAFKA_BINDING_NAME) -a final true
+	ibmcloud fn action create format-state-change --kind nodejs:10 out/format_state_change.zip -P kafka_creds.json -p binding_name $(KAFKA_BINDING_NAME) -a final true
+	ibmcloud fn action create ingest --web true --kind nodejs:10 out/ingest.zip -P kafka_creds.json -p binding_name $(KAFKA_BINDING_NAME) -a final true
 	ibmcloud fn action create list --web true --kind nodejs:10 out/list.zip -P sql_creds.json -a final true
 	ibmcloud fn action create latest --web true --kind nodejs:10 out/latest.zip -P sql_creds.json -a final true
 
 update_actions: package
 	ibmcloud fn action update eventinserter --kind nodejs:10 out/eventinserter.zip -P sql_creds.json -a final true
-	ibmcloud fn action update format-forecast --kind nodejs:10 out/format_forecast.zip -P kafka_creds.json -a final true
-	ibmcloud fn action update format-temperature --kind nodejs:10 out/format_temperature.zip -P kafka_creds.json -a final true
-	ibmcloud fn action update format-state-change --kind nodejs:10 out/format_state_change.zip -P kafka_creds.json -a final true
-	ibmcloud fn action update ingest --web true --kind nodejs:10 out/ingest.zip -P kafka_creds.json -a final true
+	ibmcloud fn action update format-forecast --kind nodejs:10 out/format_forecast.zip -P kafka_creds.json -p binding_name $(KAFKA_BINDING_NAME) -a final true
+	ibmcloud fn action update format-temperature --kind nodejs:10 out/format_temperature.zip -P kafka_creds.json -p binding_name $(KAFKA_BINDING_NAME) -a final true
+	ibmcloud fn action update format-state-change --kind nodejs:10 out/format_state_change.zip -P kafka_creds.json -p binding_name $(KAFKA_BINDING_NAME) -a final true
+	ibmcloud fn action update ingest --web true --kind nodejs:10 out/ingest.zip -P kafka_creds.json -p binding_name $(KAFKA_BINDING_NAME) -a final true
 	ibmcloud fn action update list --web true --kind nodejs:10 out/list.zip -P sql_creds.json -a final true
 	ibmcloud fn action update latest --web true --kind nodejs:10 out/latest.zip -P sql_creds.json -a final true
 
 create_triggers:
 	ibmcloud fn trigger create $(FORECAST_TRIGGER_NAME) -f $(KAFKA_BINDING_PATH) -p topic $(EVENT_STREAMS_FORECAST_EVENTS_TOPIC_NAME) -p isJSONData true
 	ibmcloud fn trigger create $(TEMPERATURE_TRIGGER_NAME) -f $(KAFKA_BINDING_PATH) -p topic $(EVENT_STREAMS_TEMPERATURE_EVENTS_TOPIC_NAME) -p isJSONData true
-	ibmcloud fn trigger create $(STATE_CHANGE_TRIGGER_NAME) -f $(KAFKA_BINDING_PATH )-p topic $(EVENT_STREAMS_STATE_CHANGE_EVENTS_TOPIC_NAME) -p isJSONData true
+	ibmcloud fn trigger create $(STATE_CHANGE_TRIGGER_NAME) -f $(KAFKA_BINDING_PATH) -p topic $(EVENT_STREAMS_STATE_CHANGE_EVENTS_TOPIC_NAME) -p isJSONData true
 	ibmcloud fn trigger create $(DB_INGEST_TRIGGER_NAME) -f $(KAFKA_BINDING_PATH) -p topic $(EVENT_STREAMS_DB_INGEST_TOPIC_NAME) -p isJSONData true
 
 create_rules: 

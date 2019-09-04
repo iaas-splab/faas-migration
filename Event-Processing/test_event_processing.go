@@ -100,13 +100,17 @@ func (a api) GetLatest() (*ProcessedEvent, error) {
 	if err != nil {
 		return nil, err
 	}
-	var output ProcessedEvent
+	var output []ProcessedEvent
 	err = json.Unmarshal(data, &output)
 	if err != nil {
 		return nil, err
 	}
 
-	return &output, nil
+	if len(output) != 1 {
+		return nil, nil
+	}
+
+	return &output[0], nil
 }
 
 func (a api) InsertStateChangeEvent(i StateChangeEvent) error {
