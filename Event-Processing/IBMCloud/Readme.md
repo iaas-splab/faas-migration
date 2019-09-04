@@ -2,15 +2,7 @@
 
 ## IMPORTANT NOTE
 
-This implmentation is untested because deployment on IBM Cloud seems to fail due to an error on the Server side.
-When attempting the creation of the Triggers subscribing to `messageHubFeed` the Trigger creation fails because the IBM
-provided credentials are invalid. Setting the credentials manually also fails. An attmpt of deploying a Example action from the Web UI also fails, however it only displays a very generic error message there. Whats causing this is unknown. The issue might only occur with our IBM Cloud account.
-
-We have contacted IBM because of this issue. As of now a resolution of this problem is not (yet) existant.
-
-An example of the produced error is found in the [trigger_creation_failure.txt](trigger_creation_failure.txt) File
-
-To implement the trigger generation the this [Docuemntation Page](https://cloud.ibm.com/docs/openwhisk?topic=cloud-functions-pkg_event_streams#eventstreams_pkg) was used.
+This implmentation is untested because deployment on IBM Cloud has failed due to a problem with their implementation. This has been fixed now. However further validation has not taken place apart from an attempt to create a trigger.
 
 Due to these isses we have also not verified the suitability of KafkaJS to produce/publish messages to the broker.
 
