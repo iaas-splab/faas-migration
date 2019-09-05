@@ -1,4 +1,4 @@
-package xyz.cmueller.serverless.utils;
+package spblab.thumbgen.lambda.utils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;

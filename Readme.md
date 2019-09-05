@@ -1,7 +1,5 @@
 # Practical Aspects of FaaS Applications' Migration - Implemtentations
 
-
-
 ## General Documentation
 
 Some general notes on configuring the cloud providers command line interfaces or the general deployment of a .NET based Function

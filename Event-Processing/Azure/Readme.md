@@ -25,7 +25,7 @@ It might also be a good idea to change the database pasword and username. But ke
 
 ```makefile
 # General Azure Configuration
-RESOURCE_GROUP_NAME := bachelor-thesis
+RESOURCE_GROUP_NAME := faas-migration
 AZURE_REGION := westeurope
 
 # MySQL Configuration

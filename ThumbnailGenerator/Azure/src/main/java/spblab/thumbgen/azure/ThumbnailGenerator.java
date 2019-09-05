@@ -1,4 +1,4 @@
-package xyz.cmueller.azure;
+package spblab.thumbgen.azure;
 
 import java.util.Base64;
 import java.util.logging.Logger;

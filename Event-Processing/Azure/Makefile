@@ -1,7 +1,7 @@
 # CONFIGURATION
 
 # General Azure Configuration
-RESOURCE_GROUP_NAME := bachelor-thesis
+RESOURCE_GROUP_NAME := faas-migration
 AZURE_REGION := westeurope
 
 # MySQL Configuration

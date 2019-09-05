@@ -1,4 +1,4 @@
-package xyz.cmueller.wsk;
+package spblab.thumbgen.wsk;
 
 import java.io.ByteArrayInputStream;
 import java.io.CharArrayWriter;

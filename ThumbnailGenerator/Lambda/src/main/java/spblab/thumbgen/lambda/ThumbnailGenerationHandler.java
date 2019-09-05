@@ -1,12 +1,8 @@
-package xyz.cmueller.serverless;
+package spblab.thumbgen.lambda;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintStream;
-import java.util.HashMap;
-import java.util.Map;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
@@ -18,15 +14,10 @@ import com.amazonaws.services.s3.model.PutObjectResult;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.util.IOUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import static xyz.cmueller.serverless.Config.THUMBNAIL_BUCKET;
-import static xyz.cmueller.serverless.Config.WEBHOOK_URL;
+import static spblab.thumbgen.lambda.Config.THUMBNAIL_BUCKET;
 
 @SuppressWarnings("unused")
 public class ThumbnailGenerationHandler implements RequestHandler<S3Event, Void> {

@@ -25,7 +25,7 @@ To deploy the use-case first modify the following lines in the `Makefile` accord
 # Define the Name and Space of your Cloud Foundry organzation accordingly
 # The Makefile assumes this namespace is selected using "ibmcloud fn property --namespace"
 # and "ibmcloud targed" appropriately
-CF_ORG_NAME := kaffemuehle@posteo.de
+CF_ORG_NAME := mymail@mymail.com
 CF_ORG_SPACE := dev
 ```
 

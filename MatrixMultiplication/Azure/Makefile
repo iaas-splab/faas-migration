@@ -3,7 +3,7 @@
 #############################################################################
 
 # Define The name of the Resource Group to deploy in (must exist)
-RESOURCE_GROUP_NAME := bachelor-thesis
+RESOURCE_GROUP_NAME := faas-migration
 # Define the name of the storage account (gets created if not present)
 STORAGE_ACCOUNT_NAME := cmuellermtrxmulstore
 # Define the Name of the Function App (gets created if not present)

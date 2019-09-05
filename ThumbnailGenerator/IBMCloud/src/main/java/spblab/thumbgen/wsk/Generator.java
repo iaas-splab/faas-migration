@@ -1,4 +1,4 @@
-package xyz.cmueller.wsk;
+package spblab.thumbgen.wsk;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -10,7 +10,7 @@ import com.google.api.client.util.IOUtils;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import io.minio.MinioClient;
-import xyz.cmueller.wsk.model.ObjectStorageEvent;
+import spblab.thumbgen.wsk.model.ObjectStorageEvent;
 
 @SuppressWarnings("DuplicatedCode")
 public class Generator {

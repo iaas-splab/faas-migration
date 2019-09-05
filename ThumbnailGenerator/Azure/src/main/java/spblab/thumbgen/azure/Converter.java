@@ -1,4 +1,4 @@
-package xyz.cmueller.azure;
+package spblab.thumbgen.azure;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;

@@ -40,12 +40,12 @@ configure_trigger:
 	ibmcloud fn trigger create $(TRIGGER_NAME) --feed $(PACKAGE_BINDING_NAME)/changes -p bucket $(OBJECT_STORAGE_INPUT_BUCKET) -p endpoint $(OBJECT_STORAGE_ENDPOINT)
 
 deploy_actions: build
-	ibmcloud fn action create $(UPLOADER_ACTION_NAME) target/thumbnail-generator.jar --web true --main xyz.cmueller.wsk.Uploader -p endpoint $(OBJECT_STORAGE_ENDPOINT) -p bucket $(OBJECT_STORAGE_INPUT_BUCKET) -p access_key $(OBJECT_STORAGE_ACCESS_KEY) -p secret_key $(OBJECT_STORAGE_SECRET_KEY) -a final true
-	ibmcloud fn action create $(GENERATOR_ACTION_NAME) target/thumbnail-generator.jar --main xyz.cmueller.wsk.Generator -p endpoint $(OBJECT_STORAGE_ENDPOINT) -p output_bucket $(OBJECT_STORAGE_OUTPUT_BUCKET) -p access_key $(OBJECT_STORAGE_ACCESS_KEY) -p secret_key $(OBJECT_STORAGE_SECRET_KEY)
+	ibmcloud fn action create $(UPLOADER_ACTION_NAME) target/thumbnail-generator.jar --web true --main spblab.thumbgen.wsk.Uploader -p endpoint $(OBJECT_STORAGE_ENDPOINT) -p bucket $(OBJECT_STORAGE_INPUT_BUCKET) -p access_key $(OBJECT_STORAGE_ACCESS_KEY) -p secret_key $(OBJECT_STORAGE_SECRET_KEY) -a final true
+	ibmcloud fn action create $(GENERATOR_ACTION_NAME) target/thumbnail-generator.jar --main spblab.thumbgen.wsk.Generator -p endpoint $(OBJECT_STORAGE_ENDPOINT) -p output_bucket $(OBJECT_STORAGE_OUTPUT_BUCKET) -p access_key $(OBJECT_STORAGE_ACCESS_KEY) -p secret_key $(OBJECT_STORAGE_SECRET_KEY)
 
 update_actions: build
-	ibmcloud fn action update $(UPLOADER_ACTION_NAME) target/thumbnail-generator.jar --web true --main xyz.cmueller.wsk.Uploader -p endpoint $(OBJECT_STORAGE_ENDPOINT) -p bucket $(OBJECT_STORAGE_INPUT_BUCKET) -p access_key $(OBJECT_STORAGE_ACCESS_KEY) -p secret_key $(OBJECT_STORAGE_SECRET_KEY) -a final true
-	ibmcloud fn action update $(GENERATOR_ACTION_NAME) target/thumbnail-generator.jar --main xyz.cmueller.wsk.Generator -p endpoint $(OBJECT_STORAGE_ENDPOINT) -p output_bucket $(OBJECT_STORAGE_OUTPUT_BUCKET) -p access_key $(OBJECT_STORAGE_ACCESS_KEY) -p secret_key $(OBJECT_STORAGE_SECRET_KEY)
+	ibmcloud fn action update $(UPLOADER_ACTION_NAME) target/thumbnail-generator.jar --web true --main spblab.thumbgen.wsk.Uploader -p endpoint $(OBJECT_STORAGE_ENDPOINT) -p bucket $(OBJECT_STORAGE_INPUT_BUCKET) -p access_key $(OBJECT_STORAGE_ACCESS_KEY) -p secret_key $(OBJECT_STORAGE_SECRET_KEY) -a final true
+	ibmcloud fn action update $(GENERATOR_ACTION_NAME) target/thumbnail-generator.jar --main spblab.thumbgen.wsk.Generator -p endpoint $(OBJECT_STORAGE_ENDPOINT) -p output_bucket $(OBJECT_STORAGE_OUTPUT_BUCKET) -p access_key $(OBJECT_STORAGE_ACCESS_KEY) -p secret_key $(OBJECT_STORAGE_SECRET_KEY)
 
 register_rule:
 	ibmcloud fn rule create $(RULE_NAME) $(TRIGGER_NAME) $(GENERATOR_ACTION_NAME)

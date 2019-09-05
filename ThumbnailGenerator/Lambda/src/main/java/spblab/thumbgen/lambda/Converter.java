@@ -1,4 +1,4 @@
-package xyz.cmueller.wsk;
+package spblab.thumbgen.lambda;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -10,10 +10,6 @@ import org.imgscalr.Scalr;
 
 public class Converter {
 
-    /**
-     Creates a Thumbnail from the given input.
-     If the operation fails a Exception is thrown, otherwise the thumbnail encoded as Byte Array is returned
-     */
     public static byte[] createThumbnail(byte[] input) throws Exception {
         ByteArrayInputStream bin = new ByteArrayInputStream(input);
         BufferedImage img = ImageIO.read(bin);

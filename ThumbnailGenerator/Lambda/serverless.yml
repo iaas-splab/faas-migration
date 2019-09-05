@@ -23,13 +23,13 @@ package:
 
 functions:
   upload:
-    handler: xyz.cmueller.serverless.UploadHandler
+    handler: spblab.thumbgen.lambda.UploadHandler
     events:
      - http:
          path: upload
          method: post
   thumbnail-generator:
-    handler: xyz.cmueller.serverless.ThumbnailGenerationHandler
+    handler: spblab.thumbgen.lambda.ThumbnailGenerationHandler
     events:
     - s3:
         bucket: ${self:custom.image_bucket_name}

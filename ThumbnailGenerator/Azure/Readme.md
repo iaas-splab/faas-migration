@@ -8,7 +8,7 @@ Before deploying you might want to change the name of the resulting function app
 
 ```Makefile
 # Configuration
-RESOURCE_GROUP := bachelor-thesis
+RESOURCE_GROUP := faas-migration
 FUNCTION_APP_NAME := cmueller-bt-thumbnail-generator
 REGION := westeurope
 ```

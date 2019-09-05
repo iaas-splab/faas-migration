@@ -1,4 +1,4 @@
-package xyz.cmueller.serverless;
+package spblab.thumbgen.lambda;
 
 import java.io.ByteArrayInputStream;
 import java.util.Arrays;
@@ -16,10 +16,10 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import xyz.cmueller.serverless.utils.ApiGatewayResponse;
+import spblab.thumbgen.lambda.utils.ApiGatewayResponse;
 
-import static xyz.cmueller.serverless.Config.IMAGE_UPLOAD_BUCKET;
-import static xyz.cmueller.serverless.Config.VALID_MIME_TYPES;
+import static spblab.thumbgen.lambda.Config.IMAGE_UPLOAD_BUCKET;
+import static spblab.thumbgen.lambda.Config.VALID_MIME_TYPES;
 
 @SuppressWarnings("unused")
 public class UploadHandler implements RequestHandler<APIGatewayProxyRequestEvent, ApiGatewayResponse> {

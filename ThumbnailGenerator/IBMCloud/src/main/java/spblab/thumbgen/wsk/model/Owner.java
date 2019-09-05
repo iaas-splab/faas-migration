@@ -1,6 +1,6 @@
 // Generated Using:
 //    http://www.jsonschema2pojo.org/
-package xyz.cmueller.wsk.model;
+package spblab.thumbgen.wsk.model;
 
 import java.io.Serializable;
 import com.google.gson.annotations.Expose;
