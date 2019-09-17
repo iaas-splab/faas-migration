@@ -1,11 +1,5 @@
 # Event Processing - IBM Implementation
 
-## IMPORTANT NOTE
-
-This implmentation is untested because deployment on IBM Cloud has failed due to a problem with their implementation. This has been fixed now. However further validation has not taken place apart from an attempt to create a trigger.
-
-Due to these isses we have also not verified the suitability of KafkaJS to produce/publish messages to the broker.
-
 ## Requirements
 
 Deploying this application requires the following dependencies and prerequisites:
