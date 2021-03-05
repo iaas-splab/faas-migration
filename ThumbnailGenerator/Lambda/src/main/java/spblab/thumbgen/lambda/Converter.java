@@ -21,9 +21,8 @@ public class Converter {
     private static final float MAX_WIDTH = 160;
     private static final float MAX_HEIGHT = 90;
     private final String JPG_TYPE = "jpg";
-    private final String JPG_MIME = "image/jpeg";
+    private final String JPEG_TYPE = "jpeg";
     private final String PNG_TYPE = "png";
-    private final String PNG_MIME = "image/png";
 
     private final boolean typeInferable;
     private final String fileType;
@@ -32,7 +31,8 @@ public class Converter {
         Matcher matcher = Pattern.compile(".*\\.([^.]*)").matcher(srcKey);
         this.typeInferable = matcher.matches();
         if (typeInferable) {
-            this.fileType = matcher.group(1);
+            this.fileType = matcher.group(1).trim().toLowerCase();
+            LOG.info("File type: " + fileType);
         } else {
             this.fileType = "";
         }
@@ -69,14 +69,14 @@ public class Converter {
     }
 
     public boolean isImage() {
-        return JPG_TYPE.equals(fileType) || PNG_TYPE.equals(fileType);
+        return JPG_TYPE.equals(fileType) || JPEG_TYPE.equals(fileType) || PNG_TYPE.equals(fileType);
     }
 
     public String getImageMimeType() {
-        if (JPG_TYPE.equals(fileType)) {
-            return JPG_MIME;
+        if (JPG_TYPE.equals(fileType) || JPEG_TYPE.equals(fileType)) {
+            return "image/jpeg";
         } else if (PNG_TYPE.equals(fileType)) {
-            return PNG_MIME;
+            return "image/png";
         }
         return "";
     }
